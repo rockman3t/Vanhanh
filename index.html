@@ -107,7 +107,7 @@
     .baoCao-user {
       background-color: yellow !important;
     }
-    /* Ẩn phần hiển thị mảng dữ liệu báo cáo cuối ca */
+    /* Ẩn phần hiển thị mảng dữ liệu trả về */
     #reportArray {
       display: none;
     }
@@ -203,13 +203,51 @@
       </td>
     </tr>
     <!-- BẢNG DỮ LIỆU: Các ngành hàng -->
-    <tr>
-      <th class="table-header">NGÀNH HÀNG</th>
-      <th class="table-header">MỤC TIÊU</th>
-      <th class="table-header">THỰC HIỆN</th>
-      <th class="table-header">HOÀN THÀNH</th>
-    </tr>
-    <!-- Các hàng ngành hàng sẽ được tạo tự động từ API -->
+<tr>
+  <th class="table-header">NGÀNH HÀNG</th>
+  <th class="table-header">MỤC TIÊU</th>
+  <th class="table-header">THỰC HIỆN</th>
+  <th class="table-header">HOÀN THÀNH</th>
+</tr>
+
+<!-- Hàng mặc định ICT -->
+<tr class="data-row static-row">
+  <td>
+    <input type="text" class="nganhHangInput dynamic-input" 
+           value="1. ICT" oninput="adjustInputSize(this)">
+  </td>
+  <td>
+    <input type="text" class="mucTieuInput dynamic-input"
+           oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" 
+           value="0">
+  </td>
+  <td>
+    <input type="text" class="thucHien dynamic-input"
+           oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" 
+           value="0">
+  </td>
+  <td class="hoanThanh">0%</td>
+</tr>
+
+<!-- Hàng mặc định VAS -->
+<tr class="data-row static-row">
+  <td>
+    <input type="text" class="nganhHangInput dynamic-input" 
+           value="2. VAS" oninput="adjustInputSize(this)">
+  </td>
+  <td>
+    <input type="text" class="mucTieuInput dynamic-input"
+           oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" 
+           value="0">
+  </td>
+  <td>
+    <input type="text" class="thucHien dynamic-input"
+           oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" 
+           value="0">
+  </td>
+  <td class="hoanThanh">0%</td>
+</tr>
+    <!-- Các hàng ngành hàng tĩnh đã có sẵn sẽ không bị ẩn -->
   </table>
 
   <!-- Nút Hiện/Ẩn Tính Năng -->
@@ -245,10 +283,11 @@
     <button class="confirm-button" onclick="xoaNganhHangDaChon()">Xác nhận</button>
   </div>
 
-  <!-- (Phần hiển thị mảng dữ liệu bị ẩn) -->
+  <!-- (Phần hiển thị mảng dữ liệu trả về đã ẩn) -->
   <div id="reportArray"></div>
 
   <script>
+
     // Hiển thị ngày hiện tại
     function displayCurrentDate() {
       const now = new Date();
@@ -505,7 +544,30 @@
       } else {
         userInput.classList.remove('baoCao-user');
       }
-    }
+
+
+    let isChecked = document.getElementById("baoCaoCuoiCa").checked;
+    let staticRows = document.querySelectorAll(".static-row"); // Hàng mặc định (ICT, VAS)
+    let submitButton = document.getElementById("submitButton"); // Nút Gửi Dữ Liệu
+    let dynamicRows = document.querySelectorAll(".dynamic-row"); // Hàng ngành hàng được thêm vào
+    
+
+    // Ẩn hoặc hiện hàng ngành hàng mặc định
+    staticRows.forEach(row => {
+        row.style.display = isChecked ? "none" : "table-row";
+    });
+
+    // Ẩn hoặc hiện nút Gửi Dữ Liệu
+    submitButton.style.display = isChecked ? "none" : "inline-block";
+
+    if (!isChecked) {
+        // Nếu bỏ chọn checkbox, xóa các hàng ngành hàng được thêm vào
+        dynamicRows.forEach(row => row.remove());
+
+        // Xóa dữ liệu trong các ô nhập liệu
+
+        inputFields.forEach(input => input.value = "");
+    }    }
 
     // Hàm gọi truy xuất dữ liệu báo cáo cuối ca dựa vào giá trị của ô USER và ngày hiện tại
     function fetchBaoCaoData() {
@@ -518,7 +580,7 @@
       let day = String(today.getDate()).padStart(2, '0');
       let dateParam = `${year}-${month}-${day}`;
       
-      // URL Apps Script mới với action=getData, user và date
+      // URL Apps Script với action=getData, user và date
       const fetchURL = 'https://script.google.com/macros/s/AKfycbyFd4wW0uVBk6MiWwjy4QHnhSZ6V9TJTEEizILm9tt4TPuaghc2kSvgBUw0xAVvU7x3VA/exec';
       const fullURL = fetchURL + "?action=getData&user=" + encodeURIComponent(userValue) + "&date=" + encodeURIComponent(dateParam);
       console.log("Fetch URL:", fullURL);
@@ -534,10 +596,10 @@
           document.getElementById('luyKe').value = data[0][5] ? parseInt(data[0][5]).toLocaleString('vi-VN') : '';
           updateTargets();
           // Cập nhật bảng ngành hàng:
-          // Xóa các hàng hiện có (những hàng có class "data-row")
+          // Chỉ xoá các hàng được tạo từ kết quả (đánh dấu class "fetchedRow")
           const table = document.getElementById('nganhHangTable');
-          let existingRows = table.querySelectorAll('tr.data-row');
-          existingRows.forEach(row => row.remove());
+          let fetchedRows = table.querySelectorAll('tr.fetchedRow');
+          fetchedRows.forEach(row => row.remove());
           // Từ kết quả API (dòng đầu tiên) duyệt từ cột J trở đi theo cặp (Tên ngành hàng, Mục tiêu)
           let rowData = data[0];
           // Giả sử: cột J (index 9): tên ngành, cột K (index 10): mục tiêu; cột L (index 11): tên ngành kế, cột M (index 12): mục tiêu,...
@@ -548,7 +610,7 @@
             let industryTarget = rowData[indexIndustry + 1] ? rowData[indexIndustry + 1] : '0';
             if(industryName.toString().trim() === '') break; // Nếu không có tên ngành thì dừng
             let newRow = table.insertRow(-1);
-            newRow.className = 'data-row';
+            newRow.className = 'data-row fetchedRow';
             newRow.innerHTML = `
               <td><input type="text" class="nganhHangInput dynamic-input" value="${count}. ${industryName}" oninput="adjustInputSize(this)"></td>
               <td><input type="text" class="mucTieuInput dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="${industryTarget}"></td>
@@ -583,6 +645,7 @@
       initCaLamViec();
       displayCurrentDate();
     };
+
   </script>
 </body>
 </html>
