@@ -7,12 +7,13 @@
     <script>
         async function searchUser() {
             let user = document.getElementById("userInput").value;
-            if (!user) {
-                alert("Vui lòng nhập USER!");
+            let date = document.getElementById("dateInput").value;
+            if (!user || !date) {
+                alert("Vui lòng nhập USER và Ngày!");
                 return;
             }
 
-            let apiUrl = "https://script.google.com/macros/s/AKfycbw6xtM0_DlL5zXdedyleM5WTXxWtPrOhbXMv8DGsfJ_nuPaDiuMzL8OC6F1qAlp5uLz/exec?user=" + encodeURIComponent(user);
+            let apiUrl = "https://script.google.com/macros/s/AKfycbyml_gfvkghBk8K3cwid7tg0f6MlPh6QwKX9fUMxcdXwUZaIbQxW3saatsjwOx97EREdw/exec?user=" + encodeURIComponent(user);
 
             try {
                 let response = await fetch(apiUrl);
@@ -24,32 +25,26 @@
                 if (!data || data.length === 0) {
                     resultDiv.innerHTML = "<p>Không tìm thấy dữ liệu.</p>";
                 } else {
-                    let uniqueData = [];
-                    let seen = new Set();
-
-                    for (let row of data) {
-                        let rowString = JSON.stringify(row);
-                        if (!seen.has(rowString)) {
-                            uniqueData.push(row);
-                            seen.add(rowString);
-                        }
+                    let filteredData = data.filter(row => row[0].startsWith(date) && String(row[3]).trim() === user);
+                    
+                    if (filteredData.length === 0) {
+                        resultDiv.innerHTML = "<p>Không tìm thấy dữ liệu phù hợp.</p>";
+                        return;
                     }
+
+                    let lastResult = filteredData[filteredData.length - 1];
 
                     let table = "<table border='1'><tr>";
-                    for (let header of uniqueData[0]) {
+                    for (let header of ["Date", "SIÊU THỊ", "NHÂN VIÊN", "USER", "Cột E", "Cột F", "Cột G", "Cột H", "Cột I", "Cột J", "Cột K", "Cột L"]) {
                         table += `<th>${header}</th>`;
                     }
-                    table += "</tr>";
-
-                    for (let row of uniqueData) {
-                        table += "<tr>";
-                        for (let cell of row) {
-                            table += `<td>${cell}</td>`;
-                        }
-                        table += "</tr>";
+                    table += "</tr><tr>";
+                    
+                    for (let cell of lastResult) {
+                        table += `<td>${cell}</td>`;
                     }
-                    table += "</table>";
-
+                    
+                    table += "</tr></table>";
                     resultDiv.innerHTML = table;
                 }
             } catch (error) {
@@ -61,6 +56,7 @@
 </head>
 <body>
     <h2>Tra cứu USER</h2>
+    <input type="date" id="dateInput">
     <input type="text" id="userInput" placeholder="Nhập USER">
     <button onclick="searchUser()">Tìm kiếm</button>
     <div id="result"></div>
