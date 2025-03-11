@@ -1,70 +1,57 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Báo cáo cuối ca - Tra cứu USER</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .report { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
-    h1, h2 { color: #333; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu USER</title>
+    <script>
+        async function searchUser() {
+            let user = document.getElementById("userInput").value;
+            if (!user) {
+                alert("Vui lòng nhập USER!");
+                return;
+            }
+
+            let apiUrl = "https://script.google.com/macros/s/AKfycbyml_gfvkghBk8K3cwid7tg0f6MlPh6QwKX9fUMxcdXwUZaIbQxW3saatsjwOx97EREdw/exec?user=" + encodeURIComponent(user);
+
+            try {
+                let response = await fetch(apiUrl);
+                let data = await response.json();
+                
+                let resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = ""; 
+
+                if (data.length === 0) {
+                    resultDiv.innerHTML = "<p>Không tìm thấy dữ liệu.</p>";
+                } else {
+                    let table = "<table border='1'><tr>";
+                    for (let header of data[0]) {
+                        table += `<th>${header}</th>`;
+                    }
+                    table += "</tr>";
+
+                    for (let row of data) {
+                        table += "<tr>";
+                        for (let cell of row) {
+                            table += `<td>${cell}</td>`;
+                        }
+                        table += "</tr>";
+                    }
+                    table += "</table>";
+
+                    resultDiv.innerHTML = table;
+                }
+            } catch (error) {
+                console.error("Lỗi:", error);
+                document.getElementById("result").innerHTML = "<p>Lỗi khi lấy dữ liệu!</p>";
+            }
+        }
+    </script>
 </head>
 <body>
-  <h1>Báo cáo cuối ca</h1>
-  <form id="userForm">
-    <label for="username">Nhập USER:</label>
-    <input type="text" id="username" name="username" required>
-    <button type="submit">Tra cứu</button>
-  </form>
-
-  <div id="result" class="report"></div>
-
-  <script>
-    // URL của Google Apps Script Web App (thay thế URL này bằng URL Web App của bạn)
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwpo-mcWG0PAUw7PCsYZmfJ2D2Iic8uyYgoMAvXN-EIrxD81fTp8b9XoWfRHMisYQUl/exec';
-
-    // Hàm xử lý hiển thị dữ liệu khi nhận được dữ liệu từ Apps Script
-    function displayResult(data, userInput) {
-      const resultDiv = document.getElementById('result');
-      
-      // Nếu tiêu đề của cột D là "USER", dùng item.USER; nếu không, có thể bạn cần kiểm tra theo tên khác
-      // Trong ví dụ này, ta kiểm tra cả "USER" và nếu không có, kiểm tra "col4"
-      const userData = data.find(item => {
-        let userField = item.USER || item.col4; 
-        return userField && userField.toLowerCase() === userInput.toLowerCase();
-      });
-      
-      if (userData) {
-        let output = '<h2>Thông tin của ' + (userData.USER || userData.col4) + '</h2><ul>';
-        for (const key in userData) {
-          if (userData.hasOwnProperty(key)) {
-            output += '<li><strong>' + key + ':</strong> ' + userData[key] + '</li>';
-          }
-        }
-        output += '</ul>';
-        resultDiv.innerHTML = output;
-      } else {
-        resultDiv.innerHTML = '<p>Không tìm thấy dữ liệu cho USER "' + userInput + '"</p>';
-      }
-    }
-
-    // Xử lý sự kiện submit của form
-    document.getElementById('userForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-      const userInput = document.getElementById('username').value.trim();
-      if (!userInput) return;
-
-      // Gọi Apps Script Web App để lấy dữ liệu từ Google Sheet
-      fetch(scriptURL)
-        .then(response => response.json())
-        .then(data => {
-          displayResult(data, userInput);
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-          document.getElementById('result').innerHTML = '<p>Có lỗi xảy ra khi lấy dữ liệu.</p>';
-        });
-    });
-  </script>
+    <h2>Tra cứu USER</h2>
+    <input type="text" id="userInput" placeholder="Nhập USER">
+    <button onclick="searchUser()">Tìm kiếm</button>
+    <div id="result"></div>
 </body>
 </html>
