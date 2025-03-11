@@ -105,15 +105,15 @@
   </style>
 </head>
 <body>
-  <!-- Hiển thị ngày/tháng/năm và checkbox Báo Cáo Cuối Ca -->
+  <!-- Hiển thị ngày/tháng/năm và checkbox (checkbox chỉ hiển thị, không xử lý gì) -->
   <div class="current-date" id="currentDateContainer">
     <span id="currentDate"></span>
-    <input type="checkbox" id="baoCaoCuoiCaCheckbox" onchange="baoCaoCuoiCaChanged()">
+    <input type="checkbox" id="baoCaoCuoiCaCheckbox">
     <label for="baoCaoCuoiCaCheckbox">Báo Cáo Cuối Ca</label>
   </div>
 
   <table id="nganhHangTable">
-    <!-- SIÊU THỊ: Nhãn 1 ô, danh sách chọn 3 ô -->
+    <!-- SIÊU THỊ -->
     <tr class="category-row">
       <td class="category-label">SIÊU THỊ</td>
       <td colspan="3">
@@ -140,7 +140,7 @@
       <td colspan="2">
         <input type="text" id="user" class="dynamic-input"
           oninput="this.value=this.value.replace(/[^0-9]/g,''); adjustInputSize(this)"
-          placeholder="Nhập USER nếu báo cáo cuối ca">
+          placeholder="Nhập USER">
       </td>
     </tr>
     <!-- TARGET THÁNG -->
@@ -192,14 +192,14 @@
           placeholder="Realtime..." style="text-align: center;">
       </td>
     </tr>
-    <!-- BẢNG DỮ LIỆU: Các ngành hàng -->
+    <!-- Bảng ngành hàng -->
     <tr>
       <th class="table-header">NGÀNH HÀNG</th>
       <th class="table-header">MỤC TIÊU</th>
       <th class="table-header">THỰC HIỆN</th>
       <th class="table-header">HOÀN THÀNH</th>
     </tr>
-    <!-- Ngành hàng thứ 1 -->
+    <!-- Ngành hàng mẫu 1 -->
     <tr class="data-row">
       <td>
         <input type="text" class="nganhHangInput dynamic-input" value="1. ICT" oninput="adjustInputSize(this)">
@@ -214,7 +214,7 @@
       </td>
       <td class="hoanThanh">0%</td>
     </tr>
-    <!-- Ngành hàng thứ 2 -->
+    <!-- Ngành hàng mẫu 2 -->
     <tr class="data-row">
       <td>
         <input type="text" class="nganhHangInput dynamic-input" value="2. VAS" oninput="adjustInputSize(this)">
@@ -231,19 +231,14 @@
     </tr>
   </table>
 
-  <!-- Nút Hiện/Ẩn Tính Năng -->
   <button class="toggle-button" onclick="toggleFeatures()">Hiện/Ẩn Tính Năng</button>
-  
-  <!-- Nút Gửi Dữ Liệu -->
   <button class="submit-button" onclick="submitData()">Gửi Dữ Liệu</button>
   
-  <!-- Container nút Thêm/Xóa ngành hàng -->
   <div id="featureButtons">
     <button id="addButton" class="add-button" onclick="hienThiLuaChonThem()">Thêm ngành hàng</button>
     <button id="deleteButton" class="delete-button" onclick="hienThiLuaChonXoa()">Xóa ngành hàng</button>
   </div>
-
-  <!-- Khối thêm ngành hàng -->
+  
   <div id="addSection">
     <select id="nganhHangAddSelect">
       <option value="Phụ Kiện">Phụ Kiện</option>
@@ -257,8 +252,7 @@
     </select>
     <button class="confirm-button" onclick="themNganhHangDaChon()">Xác nhận</button>
   </div>
-
-  <!-- Khối xóa ngành hàng -->
+  
   <div class="delete-section" id="deleteSection">
     <select id="nganhHangSelect"></select>
     <button class="confirm-button" onclick="xoaNganhHangDaChon()">Xác nhận</button>
@@ -274,21 +268,20 @@
       document.getElementById('currentDate').textContent = `${day}/${month}/${year}`;
     }
     
-    // Tạo các nút tick cho CA LÀM VIỆC (1 đến 6)
     function initCaLamViec() {
       const container = document.getElementById('caLamViecContainer');
-      container.innerHTML = '';
-      for (let i = 1; i <= 6; i++) {
-        const span = document.createElement('span');
-        span.textContent = i;
-        span.className = 'caItem';
-        span.onclick = function() {
-          this.classList.toggle('selected');
+      if (container) {
+        container.innerHTML = '';
+        for (let i = 1; i <= 6; i++) {
+          const span = document.createElement('span');
+          span.textContent = i;
+          span.className = 'caItem';
+          span.onclick = function() { this.classList.toggle('selected'); }
+          container.appendChild(span);
         }
-        container.appendChild(span);
       }
     }
-
+    
     function formatNumber(input) {
       let value = input.value.replace(/[^0-9]/g, '');
       if (value) {
@@ -299,7 +292,7 @@
       }
       adjustInputSize(input);
     }
-
+    
     function tinhHoanThanh(input) {
       const row = input.closest('tr');
       const mucTieuInput = row.querySelector('.mucTieuInput');
@@ -323,7 +316,7 @@
         hoanThanhCell.className = 'hoanThanh between-80-100';
       }
     }
-
+    
     function updateTargets() {
       let targetThangVal = parseInt(document.getElementById('targetThang').value.replace(/[^0-9]/g, '')) || 0;
       let luyKeVal = parseInt(document.getElementById('luyKe').value.replace(/[^0-9]/g, '')) || 0;
@@ -345,17 +338,16 @@
       if (remainingDays > 0) {
         targetNgayVal = (targetThangVal - luyKeVal) / remainingDays;
       }
-      // Làm tròn theo hàng trăm nghìn (100,000)
       let roundedTargetNgay = Math.round(targetNgayVal / 100000) * 100000;
       document.getElementById('targetNgay').value = roundedTargetNgay.toLocaleString('vi-VN');
     }
-
+    
     function adjustInputSize(input) {
       let minSize = 10;
       let size = Math.max(minSize, input.value.length + 2);
       input.size = size;
     }
-
+    
     function capNhatLuaChonXoa() {
       const select = document.getElementById('nganhHangSelect');
       select.innerHTML = '';
@@ -371,7 +363,7 @@
         }
       }
     }
-
+    
     function hienThiLuaChonXoa() {
       const table = document.getElementById('nganhHangTable');
       const dataRows = table.getElementsByClassName('data-row');
@@ -382,7 +374,7 @@
       document.getElementById('deleteSection').style.display = 'block';
       capNhatLuaChonXoa();
     }
-
+    
     function xoaNganhHangDaChon() {
       const select = document.getElementById('nganhHangSelect');
       const selectedValue = select.value;
@@ -405,7 +397,7 @@
         updateDeleteButtonVisibility();
       }
     }
-
+    
     function capNhatSTT() {
       const table = document.getElementById('nganhHangTable');
       const dataRows = table.getElementsByClassName('data-row');
@@ -418,11 +410,11 @@
         }
       }
     }
-
+    
     function hienThiLuaChonThem() {
       document.getElementById('addSection').style.display = 'block';
     }
-
+    
     function themNganhHangDaChon() {
       var select = document.getElementById('nganhHangAddSelect');
       var selectedValue = select.value;
@@ -442,7 +434,7 @@
       document.getElementById('addSection').style.display = 'none';
       updateDeleteButtonVisibility();
     }
-
+    
     function toggleFeatures() {
       var featureDiv = document.getElementById('featureButtons');
       if (featureDiv.style.display === "none" || featureDiv.style.display === "") {
@@ -452,7 +444,7 @@
         featureDiv.style.display = "none";
       }
     }
-
+    
     function updateDeleteButtonVisibility() {
       const table = document.getElementById('nganhHangTable');
       const dataRows = table.getElementsByClassName('data-row');
@@ -463,75 +455,8 @@
         deleteBtn.style.display = "none";
       }
     }
-
-    // --- PHẦN BAO CAO CUỐI CA ---
-    // Khi tick checkbox, thay đổi background và placeholder của ô USER
-    function baoCaoCuoiCaChanged() {
-      var checkbox = document.getElementById('baoCaoCuoiCaCheckbox');
-      var userInput = document.getElementById('user');
-      if (checkbox.checked) {
-        userInput.style.backgroundColor = 'yellow';
-        userInput.placeholder = 'Nhập USER để tra cứu dữ liệu báo cáo cuối ca';
-      } else {
-        userInput.style.backgroundColor = '';
-        userInput.placeholder = '';
-      }
-    }
-    // Khi ô USER mất focus và checkbox đã tick, gọi hàm fetchBaoCaoData
-    document.getElementById('user').addEventListener('blur', function(){
-      if(document.getElementById('baoCaoCuoiCaCheckbox').checked){
-        fetchBaoCaoData();
-      }
-    });
-    // Hàm fetchBaoCaoData: sử dụng Fetch API để gọi Web App và lấy dữ liệu theo USER và ngày hiện tại
-    function fetchBaoCaoData() {
-      var userVal = document.getElementById('user').value;
-      var currentDate = document.getElementById('currentDate').textContent;
-      if(userVal.trim() === ''){
-        alert("Vui lòng nhập USER để tra cứu dữ liệu báo cáo cuối ca.");
-        return;
-      }
-      // Thay URL bên dưới bằng URL Web App của bạn
-      var webAppUrl = "https://script.google.com/macros/s/AKfycbwscEBFSs1tfEFYQ4wr5_iSJll4U2WY9IZ5znUlVZT_0mBL4AlaP5ZqqH8C7whus3aE-A/exec";
-      var urlWithParams = webAppUrl + "?user=" + encodeURIComponent(userVal) + "&currentDate=" + encodeURIComponent(currentDate);
-      fetch(urlWithParams)
-        .then(function(response) { return response.json(); })
-        .then(function(data) { handleBaoCaoData(data); })
-        .catch(function(error) { alert("Lỗi khi lấy dữ liệu: " + error); });
-    }
-    // Hàm xử lý dữ liệu trả về và cập nhật các ô dữ liệu
-    function handleBaoCaoData(data) {
-      if(!data) {
-        alert("Không tìm thấy dữ liệu báo cáo cuối ca cho USER này. Vui lòng nhập thủ công.");
-        return;
-      }
-      document.getElementById('targetThang').value = data.targetThang || '';
-      document.getElementById('luyKe').value = data.luyKe || '';
-      document.getElementById('targetConLai').value = data.targetConLai || '';
-      document.getElementById('targetNgay').value = data.targetNgay || '';
-      document.getElementById('tenNhanVien').value = data.nhanVien || '';
-      document.getElementById('realtime').value = data.realtime || '';
-      
-      // Cập nhật bảng ngành hàng: xoá các dòng cũ và thêm dòng mới từ data.industries
-      var table = document.getElementById('nganhHangTable');
-      var rows = table.getElementsByClassName('data-row');
-      while(rows.length > 0){
-        table.deleteRow(rows[0].rowIndex);
-      }
-      if(data.industries && data.industries.length > 0){
-        data.industries.forEach(function(ind, index){
-          var newRow = table.insertRow(-1);
-          newRow.className = 'data-row';
-          newRow.innerHTML = '<td><input type="text" class="nganhHangInput dynamic-input" value="' + (index+1) + '. ' + ind.tenMucTieu + '" oninput="adjustInputSize(this)"></td>' +
-                             '<td><input type="text" class="mucTieuInput dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="' + (ind.mucTieu || 0) + '"></td>' +
-                             '<td><input type="text" class="thucHien dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>' +
-                             '<td class="hoanThanh">0%</td>';
-        });
-      }
-    }
-    // --- KẾT THÚC PHẦN BAO CAO CUỐI CA ---
-
-    // Hàm gửi dữ liệu qua POST đến Web App (Apps Script)
+    
+    // --- PHẦN GỬI DỮ LIỆU ---
     function submitData() {
       const industries = [];
       const table = document.getElementById('nganhHangTable');
@@ -557,17 +482,17 @@
         targetConLai: document.getElementById('targetConLai').value,
         targetNgay: document.getElementById('targetNgay').value,
         realtime: document.getElementById('realtime').value,
-        industries: industries
+        industries: industries,
+        // Nếu cần, bạn có thể truyền thêm thuộc tính reportEnd
+        reportEnd: false
       };
       
       console.log("Data to submit:", data);
       
-      // Thay URL bên dưới bằng URL Web App của bạn
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbwscEBFSs1tfEFYQ4wr5_iSJll4U2WY9IZ5znUlVZT_0mBL4AlaP5ZqqH8C7whus3aE-A/exec';
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbyxOAjHfFnqPRLQeymaB097pUDPRy58N7mFzzF6PsDRcweaINM9SlJSm3JAKh5GAQkGlw/exec';
       
       fetch(scriptURL, {
         method: 'POST',
-        mode: 'no-cors',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
       })
@@ -579,7 +504,7 @@
         alert("Có lỗi xảy ra khi gửi dữ liệu.");
       });
     }
-
+    
     window.onload = function() {
       updateDeleteButtonVisibility();
       initCaLamViec();
