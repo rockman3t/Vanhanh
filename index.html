@@ -82,6 +82,15 @@
     .confirm-button { background-color: #FFA500; margin-left: 5px; }
     .toggle-button { background-color: #007BFF; }
     .submit-button { background-color: #2E8B57; margin-top: 10px; }
+    /* Container chung cho nút Gửi Dữ Liệu và nút Chụp Hình */
+    #submitContainer {
+      margin-top: 10px;
+    }
+    /* Nút Chụp Hình sẽ mặc định ẩn, hiển thị sau khi gửi dữ liệu thành công */
+    #screenshotBtn {
+      display: none;
+      margin-left: 10px;
+    }
     #featureButtons, #addSection, #deleteSection { display: none; margin-top: 10px; }
     .caLamViecContainer {
       display: flex;
@@ -228,11 +237,15 @@
     </tr>
   </table>
 
+  <!-- Các nút điều khiển -->
   <!-- Nút Hiện/Ẩn Tính Năng -->
   <button class="toggle-button" onclick="toggleFeatures()">Hiện/Ẩn Tính Năng</button>
   
-  <!-- Nút Gửi Dữ Liệu -->
-  <button class="submit-button" onclick="submitData()">Gửi Dữ Liệu</button>
+  <!-- Container chung cho nút Gửi Dữ Liệu và nút Chụp Hình -->
+  <div id="submitContainer">
+    <button class="submit-button" onclick="submitData()">Gửi Dữ Liệu</button>
+    <button id="screenshotBtn" onclick="captureScreenshot()">Chụp Hình</button>
+  </div>
   
   <!-- Container nút Thêm/Xóa ngành hàng -->
   <div id="featureButtons">
@@ -264,6 +277,8 @@
   <!-- (Phần hiển thị mảng dữ liệu trả về đã ẩn) -->
   <div id="reportArray"></div>
 
+  <!-- Thêm thư viện html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
     // Hiển thị ngày hiện tại
     function displayCurrentDate() {
@@ -488,6 +503,19 @@
       })
       .then(response => {
         alert("Dữ liệu đã được gửi thành công!");
+        // Ẩn các nút khác sau khi gửi thành công
+        let toggleBtn = document.querySelector('.toggle-button');
+        let submitBtn = document.querySelector('.submit-button');
+        let featureButtons = document.getElementById('featureButtons');
+        let addSection = document.getElementById('addSection');
+        let deleteSection = document.getElementById('deleteSection');
+        if (toggleBtn) toggleBtn.style.display = 'none';
+        if (submitBtn) submitBtn.style.display = 'none';
+        if (featureButtons) featureButtons.style.display = 'none';
+        if (addSection) addSection.style.display = 'none';
+        if (deleteSection) deleteSection.style.display = 'none';
+        // Hiện nút chụp hình (trong container chung với nút Gửi Dữ Liệu)
+        document.getElementById('screenshotBtn').style.display = 'inline-block';
       })
       .catch(error => {
         console.error('Error!', error.message);
@@ -574,6 +602,25 @@
       if (checkbox.checked) {
         fetchBaoCaoData();
       }
+    }
+
+    // Hàm chụp hình nội dung web (sử dụng html2canvas)
+    function captureScreenshot() {
+      // Ẩn nút Chụp Hình tạm thời để không xuất hiện trong ảnh chụp
+      let screenshotBtn = document.getElementById('screenshotBtn');
+      screenshotBtn.style.display = 'none';
+      // Sử dụng html2canvas để chụp toàn bộ nội dung body
+      html2canvas(document.body).then(function(canvas) {
+        // Chuyển canvas sang định dạng image data URL
+        let image = canvas.toDataURL("image/png");
+        // Tạo một link tạm thời để tải hình về máy
+        let link = document.createElement('a');
+        link.href = image;
+        link.download = 'screenshot.png';
+        link.click();
+        // Hiển thị lại nút chụp hình sau khi hoàn tất
+        screenshotBtn.style.display = 'inline-block';
+      });
     }
 
     window.onload = function() {
