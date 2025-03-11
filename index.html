@@ -12,7 +12,7 @@
       margin: 0;
       padding: 0;
     }
-    /* Dòng hiển thị ngày/tháng/năm và Báo Cáo Cuối Ca */
+    /* Header: hiển thị ngày/tháng/năm và checkbox Báo Cáo Cuối Ca */
     .header-container {
       display: flex;
       align-items: center;
@@ -537,18 +537,26 @@
     function fetchBaoCaoData() {
       const userValue = document.getElementById('user').value;
       if (!userValue) return;
-      // Sử dụng URL API của Google Apps Script (có thể cần thay đổi theo thiết lập của bạn)
+      // Sử dụng URL API của Google Apps Script (đã được cập nhật chính xác)
       const fetchURL = 'https://script.google.com/macros/s/AKfycbwscEBFSs1tfEFYQ4wr5_iSJll4U2WY9IZ5znUlVZT_0mBL4AlaP5ZqqH8C7whus3aE-A/exec';
-      fetch(fetchURL + "?action=getData&user=" + encodeURIComponent(userValue))
-      .then(response => response.json())
+      const fullURL = fetchURL + "?action=getData&user=" + encodeURIComponent(userValue);
+      // Thông báo URL và tham số truyền đi để kiểm tra
+      console.log("Fetch URL:", fullURL);
+      
+      fetch(fullURL)
+      .then(response => {
+        // Kiểm tra phản hồi trả về, nếu không đúng định dạng JSON sẽ báo lỗi
+        return response.json();
+      })
       .then(data => {
+        console.log("Data nhận được:", data);
         if (data) {
           // Cập nhật các trường theo dữ liệu trả về
           document.getElementById('tenNhanVien').value = data.nhanVien || '';
           document.getElementById('targetThang').value = data.targetThang ? parseInt(data.targetThang).toLocaleString('vi-VN') : '';
           document.getElementById('luyKe').value = data.luyKe ? parseInt(data.luyKe).toLocaleString('vi-VN') : '';
           updateTargets();
-          // Cập nhật bảng ngành hàng: xoá các hàng hiện tại và thêm mới theo data.industries (mảng các đối tượng với tenMucTieu và mucTieu)
+          // Cập nhật bảng ngành hàng: xoá các hàng hiện tại và thêm mới theo data.industries
           const table = document.getElementById('nganhHangTable');
           const existingRows = table.querySelectorAll('tr.data-row');
           existingRows.forEach(row => row.remove());
