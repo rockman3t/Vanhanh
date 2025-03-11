@@ -25,15 +25,20 @@
     // URL của Google Sheet đã được chia sẻ công khai
     const publicSpreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1X3BTYhRypChOLl2BLNTHvcjnoCJ5Ep0HMsHhEXhaIeA/edit?usp=sharing';
 
-    // Hàm xử lý hiển thị dữ liệu khi dữ liệu được tải về thành công
+    // Hàm hiển thị thông tin khi dữ liệu được tải về
     function showInfo(data, userInput) {
       const resultDiv = document.getElementById('result');
-      // Tìm dòng có trường USER khớp với giá trị nhập (không phân biệt chữ hoa, chữ thường)
-      const userData = data.find(item => item.USER && item.USER.toLowerCase() === userInput.toLowerCase());
+
+      // Tìm dòng có giá trị của cột USER phù hợp
+      const userData = data.find(item => {
+        // Nếu cột có tiêu đề là USER thì item.USER có giá trị,
+        // nếu không, lấy giá trị của cột thứ 4 (index 3) từ Object.values(item)
+        const userColumn = item.USER || Object.values(item)[3];
+        return userColumn && userColumn.toLowerCase() === userInput.toLowerCase();
+      });
       
       if (userData) {
-        // Tạo nội dung HTML hiển thị chi tiết thông tin của USER
-        let output = '<h2>Thông tin của ' + userData.USER + '</h2><ul>';
+        let output = '<h2>Thông tin của ' + (item.USER || Object.values(userData)[3]) + '</h2><ul>';
         for (const key in userData) {
           if (userData.hasOwnProperty(key)) {
             output += '<li><strong>' + key + ':</strong> ' + userData[key] + '</li>';
@@ -52,7 +57,6 @@
       const userInput = document.getElementById('username').value.trim();
       if (!userInput) return;
 
-      // Sử dụng Tabletop để lấy dữ liệu từ Google Sheet
       Tabletop.init({
         key: publicSpreadsheetUrl,
         simpleSheet: true,
