@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HIỆU QUẢ NGÀNH HÀNG THEO NHÂN VIÊN</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <!-- Include html2canvas for screenshot capturing -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
       font-family: 'Roboto', sans-serif;
@@ -119,122 +117,121 @@
   </style>
 </head>
 <body>
-  <!-- Bọc nội dung cần chụp (không bao gồm các nút) trong div#screenshotContent -->
-  <div id="screenshotContent">
-    <!-- Header: ngày/tháng/năm và checkbox Báo Cáo Cuối Ca -->
-    <div class="header-container">
-      <div class="current-date" id="currentDate"></div>
-      <div class="baoCaoContainer">
-        <label>
-          <input type="checkbox" id="baoCaoCuoiCa" onchange="toggleBaoCaoCuoiCa()"> Báo Cáo Cuối Ca
-        </label>
-      </div>
+  <!-- Header: ngày/tháng/năm và checkbox Báo Cáo Cuối Ca -->
+  <div class="header-container">
+    <div class="current-date" id="currentDate"></div>
+    <div class="baoCaoContainer">
+      <label>
+        <input type="checkbox" id="baoCaoCuoiCa" onchange="toggleBaoCaoCuoiCa()"> Báo Cáo Cuối Ca
+      </label>
     </div>
-
-    <table id="nganhHangTable">
-      <!-- SIÊU THỊ -->
-      <tr class="category-row">
-        <td class="category-label">SIÊU THỊ</td>
-        <td colspan="3">
-          <select id="sieuThiSelect" class="dynamic-input">
-            <option value="TGDĐ - 103 VẠN HẠNH">TGDĐ - 103 VẠN HẠNH</option>
-            <option value="TGDĐ - 55A NGUYỄN ẢNH THỦ">TGDĐ - 55A NGUYỄN ẢNH THỦ</option>
-          </select>
-        </td>
-      </tr>
-      <!-- Tiêu đề -->
-      <tr>
-        <th colspan="4" class="title">HIỆU QUẢ NGÀNH HÀNG THEO NHÂN VIÊN</th>
-      </tr>
-      <!-- NHÂN VIÊN -->
-      <tr class="category-row">
-        <td class="category-label" colspan="2">NHÂN VIÊN</td>
-        <td colspan="2">
-          <input type="text" id="tenNhanVien" class="dynamic-input" oninput="adjustInputSize(this)">
-        </td>
-      </tr>
-      <!-- USER -->
-      <tr class="category-row">
-        <td class="category-label" colspan="2">USER</td>
-        <td colspan="2">
-          <input type="text" id="user" class="dynamic-input" oninput="this.value=this.value.replace(/[^0-9]/g,''); adjustInputSize(this)" onblur="baoCaoCuoiCaChecked()">
-        </td>
-      </tr>
-      <!-- TARGET THÁNG -->
-      <tr class="category-row">
-        <td class="category-label" colspan="2">TARGET THÁNG</td>
-        <td colspan="2">
-          <input type="text" id="targetThang" class="dynamic-input"
-            oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this); updateTargets();"
-            style="text-align: center;">
-        </td>
-      </tr>
-      <!-- LŨY KẾ -->
-      <tr class="category-row">
-        <td class="category-label" colspan="2">LŨY KẾ</td>
-        <td colspan="2">
-          <input type="text" id="luyKe" class="dynamic-input"
-            oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this); updateTargets();"
-            style="text-align: center;">
-        </td>
-      </tr>
-      <!-- TARGET CÒN LẠI -->
-      <tr class="category-row">
-        <td class="category-label" colspan="2">TARGET CÒN LẠI</td>
-        <td colspan="2">
-          <input type="text" id="targetConLai" class="dynamic-input" disabled>
-        </td>
-      </tr>
-      <!-- CA LÀM VIỆC -->
-      <tr class="category-row">
-        <td class="category-label" colspan="2">CA LÀM VIỆC</td>
-        <td colspan="2">
-          <div id="caLamViecContainer" class="caLamViecContainer"></div>
-        </td>
-      </tr>
-      <!-- TARGET NGÀY -->
-      <tr class="category-row mucTieuDoanhThu">
-        <td class="category-label" colspan="2">TARGET NGÀY</td>
-        <td colspan="2">
-          <input type="text" id="targetNgay" class="dynamic-input"
-            oninput="formatNumber(this); adjustInputSize(this)" style="text-align: center;">
-        </td>
-      </tr>
-      <!-- REALTIME -->
-      <tr class="category-row mucTieuDoanhThu">
-        <td class="category-label" colspan="2">REALTIME</td>
-        <td colspan="2">
-          <input type="text" id="realtime" class="dynamic-input realtime-input"
-            oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this)"
-            placeholder="Realtime..." style="text-align: center;">
-        </td>
-      </tr>
-      <!-- BẢNG DỮ LIỆU: Các ngành hàng -->
-      <tr>
-        <th class="table-header">NGÀNH HÀNG</th>
-        <th class="table-header">MỤC TIÊU</th>
-        <th class="table-header">THỰC HIỆN</th>
-        <th class="table-header">HOÀN THÀNH</th>
-      </tr>
-      <!-- Hàng mặc định ICT -->
-      <tr class="data-row static-row">
-        <td><input type="text" class="nganhHangInput dynamic-input" value="- ICT" oninput="adjustInputSize(this)"></td>
-        <td><input type="text" class="mucTieuInput dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
-        <td><input type="text" class="thucHien dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
-        <td class="hoanThanh">0%</td>
-      </tr>
-      <!-- Hàng mặc định VAS -->
-      <tr class="data-row static-row">
-        <td><input type="text" class="nganhHangInput dynamic-input" value="- VAS" oninput="adjustInputSize(this)"></td>
-        <td><input type="text" class="mucTieuInput dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
-        <td><input type="text" class="thucHien dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
-        <td class="hoanThanh">0%</td>
-      </tr>
-    </table>
   </div>
-  
-  <!-- Các nút bên ngoài vùng chụp -->
+
+  <table id="nganhHangTable">
+    <!-- SIÊU THỊ -->
+    <tr class="category-row">
+      <td class="category-label">SIÊU THỊ</td>
+      <td colspan="3">
+        <select id="sieuThiSelect" class="dynamic-input">
+          <option value="TGDĐ - 103 VẠN HẠNH">TGDĐ - 103 VẠN HẠNH</option>
+          <option value="TGDĐ - 55A NGUYỄN ẢNH THỦ">TGDĐ - 55A NGUYỄN ẢNH THỦ</option>
+        </select>
+      </td>
+    </tr>
+    <!-- Tiêu đề -->
+    <tr>
+      <th colspan="4" class="title">HIỆU QUẢ NGÀNH HÀNG THEO NHÂN VIÊN</th>
+    </tr>
+    <!-- NHÂN VIÊN -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">NHÂN VIÊN</td>
+      <td colspan="2">
+        <input type="text" id="tenNhanVien" class="dynamic-input" oninput="adjustInputSize(this)">
+      </td>
+    </tr>
+    <!-- USER -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">USER</td>
+      <td colspan="2">
+        <input type="text" id="user" class="dynamic-input" oninput="this.value=this.value.replace(/[^0-9]/g,''); adjustInputSize(this)" onblur="baoCaoCuoiCaChecked()">
+      </td>
+    </tr>
+    <!-- TARGET THÁNG -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">TARGET THÁNG</td>
+      <td colspan="2">
+        <input type="text" id="targetThang" class="dynamic-input"
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this); updateTargets();"
+          style="text-align: center;">
+      </td>
+    </tr>
+    <!-- LŨY KẾ -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">LŨY KẾ</td>
+      <td colspan="2">
+        <input type="text" id="luyKe" class="dynamic-input"
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this); updateTargets();"
+          style="text-align: center;">
+      </td>
+    </tr>
+    <!-- TARGET CÒN LẠI -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">TARGET CÒN LẠI</td>
+      <td colspan="2">
+        <input type="text" id="targetConLai" class="dynamic-input" disabled>
+      </td>
+    </tr>
+    <!-- CA LÀM VIỆC -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">CA LÀM VIỆC</td>
+      <td colspan="2">
+        <div id="caLamViecContainer" class="caLamViecContainer"></div>
+      </td>
+    </tr>
+    <!-- TARGET NGÀY -->
+    <tr class="category-row mucTieuDoanhThu">
+      <td class="category-label" colspan="2">TARGET NGÀY</td>
+      <td colspan="2">
+        <input type="text" id="targetNgay" class="dynamic-input"
+          oninput="formatNumber(this); adjustInputSize(this)" style="text-align: center;">
+      </td>
+    </tr>
+    <!-- REALTIME -->
+    <tr class="category-row mucTieuDoanhThu">
+      <td class="category-label" colspan="2">REALTIME</td>
+      <td colspan="2">
+        <input type="text" id="realtime" class="dynamic-input realtime-input"
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this)"
+          placeholder="Realtime..." style="text-align: center;">
+      </td>
+    </tr>
+    <!-- BẢNG DỮ LIỆU: Các ngành hàng -->
+    <tr>
+      <th class="table-header">NGÀNH HÀNG</th>
+      <th class="table-header">MỤC TIÊU</th>
+      <th class="table-header">THỰC HIỆN</th>
+      <th class="table-header">HOÀN THÀNH</th>
+    </tr>
+    <!-- Hàng mặc định ICT -->
+    <tr class="data-row static-row">
+      <td><input type="text" class="nganhHangInput dynamic-input" value="- ICT" oninput="adjustInputSize(this)"></td>
+      <td><input type="text" class="mucTieuInput dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
+      <td><input type="text" class="thucHien dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
+      <td class="hoanThanh">0%</td>
+    </tr>
+    <!-- Hàng mặc định VAS -->
+    <tr class="data-row static-row">
+      <td><input type="text" class="nganhHangInput dynamic-input" value="- VAS" oninput="adjustInputSize(this)"></td>
+      <td><input type="text" class="mucTieuInput dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
+      <td><input type="text" class="thucHien dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
+      <td class="hoanThanh">0%</td>
+    </tr>
+  </table>
+
+  <!-- Nút Hiện/Ẩn Tính Năng -->
   <button class="toggle-button" onclick="toggleFeatures()">Hiện/Ẩn Tính Năng</button>
+  
+  <!-- Nút Gửi Dữ Liệu -->
   <button class="submit-button" onclick="submitData()">Gửi Dữ Liệu</button>
   
   <!-- Container nút Thêm/Xóa ngành hàng -->
@@ -450,7 +447,7 @@
       }
     }
 
-    // Hàm gửi dữ liệu đến Google Sheets qua Apps Script và chụp ảnh trang web sau khi gửi thành công
+    // Hàm gửi dữ liệu đến Google Sheets qua Apps Script
     function submitData() {
       const industries = [];
       const table = document.getElementById('nganhHangTable');
@@ -491,13 +488,6 @@
       })
       .then(response => {
         alert("Dữ liệu đã được gửi thành công!");
-        // Chụp ảnh khu vực nội dung (không bao gồm các nút)
-        html2canvas(document.getElementById("screenshotContent")).then(function(canvas) {
-          var dataURL = canvas.toDataURL("image/png");
-          // Mở ảnh chụp trong một cửa sổ mới
-          var imgWindow = window.open("");
-          imgWindow.document.write("<img src='" + dataURL + "' alt='Screenshot'/>");
-        });
       })
       .catch(error => {
         console.error('Error!', error.message);
@@ -513,8 +503,8 @@
         userInput.classList.add('baoCao-user');
       } else {
         userInput.classList.remove('baoCao-user');
-        // Khi bỏ chọn checkbox, refresh lại trang web
-        window.location.reload();
+        // Khi bỏ checkbox, refresh lại trang web
+        location.reload();
       }
     }
 
