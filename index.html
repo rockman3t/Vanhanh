@@ -21,16 +21,27 @@
                 let resultDiv = document.getElementById("result");
                 resultDiv.innerHTML = ""; 
 
-                if (data.length === 0) {
+                if (!data || data.length === 0) {
                     resultDiv.innerHTML = "<p>Không tìm thấy dữ liệu.</p>";
                 } else {
+                    let uniqueData = [];
+                    let seen = new Set();
+
+                    for (let row of data) {
+                        let rowString = JSON.stringify(row);
+                        if (!seen.has(rowString)) {
+                            uniqueData.push(row);
+                            seen.add(rowString);
+                        }
+                    }
+
                     let table = "<table border='1'><tr>";
-                    for (let header of data[0]) {
+                    for (let header of uniqueData[0]) {
                         table += `<th>${header}</th>`;
                     }
                     table += "</tr>";
 
-                    for (let row of data) {
+                    for (let row of uniqueData) {
                         table += "<tr>";
                         for (let cell of row) {
                             table += `<td>${cell}</td>`;
