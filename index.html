@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HIỆU QUẢ NGÀNH HÀNG THEO NHÂN VIÊN</title>
@@ -230,7 +229,7 @@
   </table>
 
   <!-- Nút Hiện/Ẩn Tính Năng -->
-  <button class="toggle-button" onclick="toggleFeatures()">Thêm/Xóa Ngành hàng</button>
+  <button class="toggle-button" onclick="toggleFeatures()">Hiện/Ẩn Tính Năng</button>
   
   <!-- Nút Gửi Dữ Liệu -->
   <button class="submit-button" onclick="submitData()">Gửi Dữ Liệu</button>
@@ -449,41 +448,7 @@
     }
 
     // Hàm gửi dữ liệu đến Google Sheets qua Apps Script
-   function submitData() {
-  // Lấy các phần tử cần ẩn
-  const baoCaoContainer = document.querySelector('.baoCaoContainer');
-  const toggleButton = document.querySelector('.toggle-button');
-  const submitButton = document.querySelector('.submit-button');
-  const featureButtons = document.getElementById('featureButtons');
-  const addSection = document.getElementById('addSection');
-  const deleteSection = document.getElementById('deleteSection');
-
-  // Ẩn các phần tử
-  baoCaoContainer.style.display = 'none';
-  toggleButton.style.display = 'none';
-  submitButton.style.display = 'none';
-  featureButtons.style.display = 'none';
-  addSection.style.display = 'none';
-  deleteSection.style.display = 'none';
-
-  // Chụp ảnh màn hình
-  domtoimage.toPng(document.body)
-    .then(function (dataUrl) {
-      // Hiển thị lại các phần tử đã ẩn
-      baoCaoContainer.style.display = '';
-      toggleButton.style.display = '';
-      submitButton.style.display = '';
-      featureButtons.style.display = '';
-      addSection.style.display = '';
-      deleteSection.style.display = '';
-
-      // Tạo link để tải ảnh xuống
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = 'bao_cao.png';
-      link.click();
-
-      // Tiếp tục gửi dữ liệu
+    function submitData() {
       const industries = [];
       const table = document.getElementById('nganhHangTable');
       const dataRows = table.getElementsByClassName('data-row');
@@ -497,7 +462,7 @@
           });
         }
       }
-
+      
       const data = {
         currentDate: document.getElementById('currentDate').textContent,
         sieuThi: document.getElementById('sieuThiSelect').value,
@@ -510,13 +475,15 @@
         realtime: document.getElementById('realtime').value,
         industries: industries
       };
-
+      
+      console.log("Data to submit:", data);
+      
       const scriptURL = 'https://script.google.com/macros/s/AKfycbyFd4wW0uVBk6MiWwjy4QHnhSZ6V9TJTEEizILm9tt4TPuaghc2kSvgBUw0xAVvU7x3VA/exec';
-
+      
       fetch(scriptURL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
       })
       .then(response => {
@@ -526,32 +493,18 @@
         console.error('Error!', error.message);
         alert("Có lỗi xảy ra khi gửi dữ liệu.");
       });
-    })
-    .catch(function (error) {
-      console.error('Error capturing image:', error);
-      alert("Có lỗi xảy ra khi chụp ảnh màn hình.");
-    });
-}
+    }
 
     // Hàm xử lý khi checkbox Báo Cáo Cuối Ca được thay đổi trạng thái
     function toggleBaoCaoCuoiCa() {
-  const checkbox = document.getElementById('baoCaoCuoiCa');
-  const userInput = document.getElementById('user');
-  if (checkbox.checked) {
-    // Khi checkbox được chọn, thêm lớp CSS để tô nền vàng cho ô USER
-    userInput.classList.add('baoCao-user');
-  } else {
-    // Khi checkbox bị bỏ chọn
-    userInput.classList.remove('baoCao-user');
-    if (confirm("Bạn có chắc chắn muốn bỏ chọn Báo Cáo Cuối Ca? Trang sẽ được làm mới.")) {
-      // Nếu người dùng đồng ý, làm mới trang
-      location.reload();
-    } else {
-      // Nếu người dùng không đồng ý, giữ checkbox được chọn
-      checkbox.checked = true;
+      const checkbox = document.getElementById('baoCaoCuoiCa');
+      const userInput = document.getElementById('user');
+      if (checkbox.checked) {
+        userInput.classList.add('baoCao-user');
+      } else {
+        userInput.classList.remove('baoCao-user');
+      }
     }
-  }
-}
 
     // Hàm gọi truy xuất dữ liệu báo cáo cuối ca
     function fetchBaoCaoData() {
