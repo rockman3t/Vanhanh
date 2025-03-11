@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIỆU QUẢ NGÀNH HÀNG THEO NHÂN VIÊN</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      font-weight: bold;
+      margin: 0;
+      padding: 0;
+    }
+    /* Dòng hiển thị ngày/tháng/năm và checkbox Báo Cáo Cuối Ca */
+    .current-date {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      font-size: 14px;
+      background-color: #f0f0f0;
+      border-bottom: 2px solid #808080;
+    }
+    .current-date span { flex: 1; }
+    .current-date input[type="checkbox"] {
+      margin-left: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      border: 2px solid #808080;
+    }
+    th, td {
+      border: 1px solid #808080;
+      padding: 8px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .title {
+      background-color: #BDD7EE;
+      color: #2B2160;
+      text-align: center;
+      font-size: 16px;
+      white-space: nowrap;
+      padding: 4px;
+    }
+    .category-row { background-color: #DDEBF7; }
+    .category-label { text-align: left; }
+    .mucTieuDoanhThu { background-color: #FCE4D6; color: #C00000; }
+    .table-header { background-color: #FFDAB9; color: #2B2160; text-align: center; }
+    .data-row { background-color: #EDEDED; }
+    .hoanThanh { text-align: center; }
+    .hoanThanh.above-100 { color: #3ACBAC; background-color: #EDEDED; }
+    .hoanThanh.between-80-100 { color: black; background-color: #EDEDED; }
+    .hoanThanh.below-80 { color: #FF0000; background-color: #EDEDED; }
+    input[type="text"], select {
+      width: 100%;
+      border: none;
+      background-color: transparent;
+      text-align: center;
+      font-weight: bold;
+      color: inherit;
+      font-size: inherit;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+    .dynamic-input { padding: 0; margin: 0; }
+    .add-button, .delete-button, .confirm-button, .toggle-button, .submit-button {
+      margin-top: 5px;
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .delete-button { background-color: #FF4444; margin-left: 5px; }
+    .confirm-button { background-color: #FFA500; margin-left: 5px; }
+    .toggle-button { background-color: #007BFF; }
+    .submit-button { background-color: #2E8B57; margin-top: 10px; }
+    #featureButtons, #addSection, #deleteSection { display: none; margin-top: 10px; }
+    .caLamViecContainer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 3px;
+      padding: 5px;
+    }
+    .caItem {
+      font-size: 12px;
+      padding: 4px 6px;
+      background-color: #888;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+      user-select: none;
+      transition: background-color 0.2s;
+    }
+    .caItem.selected { background-color: red; }
+    @media (max-width: 480px) {
+      .caItem { font-size: 11px; padding: 3px 5px; }
+    }
+    /* REALTIME: giống TARGET NGÀY, nền vàng */
+    .realtime-input { background-color: yellow; }
+  </style>
+</head>
+<body>
+  <!-- Hiển thị ngày/tháng/năm và checkbox Báo Cáo Cuối Ca -->
+  <div class="current-date" id="currentDateContainer">
+    <span id="currentDate"></span>
+    <input type="checkbox" id="baoCaoCuoiCaCheckbox" onchange="baoCaoCuoiCaChanged()">
+    <label for="baoCaoCuoiCaCheckbox">Báo Cáo Cuối Ca</label>
+  </div>
+
+  <table id="nganhHangTable">
+    <!-- SIÊU THỊ: Nhãn 1 ô, danh sách chọn 3 ô -->
+    <tr class="category-row">
+      <td class="category-label">SIÊU THỊ</td>
+      <td colspan="3">
+        <select id="sieuThiSelect" class="dynamic-input">
+          <option value="TGDĐ - 103 VẠN HẠNH">TGDĐ - 103 VẠN HẠNH</option>
+          <option value="TGDĐ - 55A NGUYỄN ẢNH THỦ">TGDĐ - 55A NGUYỄN ẢNH THỦ</option>
+        </select>
+      </td>
+    </tr>
+    <!-- Tiêu đề -->
+    <tr>
+      <th colspan="4" class="title">HIỆU QUẢ NGÀNH HÀNG THEO NHÂN VIÊN</th>
+    </tr>
+    <!-- NHÂN VIÊN -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">NHÂN VIÊN</td>
+      <td colspan="2">
+        <input type="text" id="tenNhanVien" class="dynamic-input" oninput="adjustInputSize(this)">
+      </td>
+    </tr>
+    <!-- USER -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">USER</td>
+      <td colspan="2">
+        <input type="text" id="user" class="dynamic-input"
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); adjustInputSize(this)"
+          placeholder="Nhập USER nếu báo cáo cuối ca">
+      </td>
+    </tr>
+    <!-- TARGET THÁNG -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">TARGET THÁNG</td>
+      <td colspan="2">
+        <input type="text" id="targetThang" class="dynamic-input"
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this); updateTargets();"
+          style="text-align: center;">
+      </td>
+    </tr>
+    <!-- LŨY KẾ -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">LŨY KẾ</td>
+      <td colspan="2">
+        <input type="text" id="luyKe" class="dynamic-input"
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this); updateTargets();"
+          style="text-align: center;">
+      </td>
+    </tr>
+    <!-- TARGET CÒN LẠI -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">TARGET CÒN LẠI</td>
+      <td colspan="2">
+        <input type="text" id="targetConLai" class="dynamic-input" disabled>
+      </td>
+    </tr>
+    <!-- CA LÀM VIỆC -->
+    <tr class="category-row">
+      <td class="category-label" colspan="2">CA LÀM VIỆC</td>
+      <td colspan="2">
+        <div id="caLamViecContainer" class="caLamViecContainer"></div>
+      </td>
+    </tr>
+    <!-- TARGET NGÀY -->
+    <tr class="category-row mucTieuDoanhThu">
+      <td class="category-label" colspan="2">TARGET NGÀY</td>
+      <td colspan="2">
+        <input type="text" id="targetNgay" class="dynamic-input"
+          oninput="formatNumber(this); adjustInputSize(this)" style="text-align: center;">
+      </td>
+    </tr>
+    <!-- REALTIME -->
+    <tr class="category-row mucTieuDoanhThu">
+      <td class="category-label" colspan="2">REALTIME</td>
+      <td colspan="2">
+        <input type="text" id="realtime" class="dynamic-input realtime-input"
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); formatNumber(this); adjustInputSize(this)"
+          placeholder="Realtime..." style="text-align: center;">
+      </td>
+    </tr>
+    <!-- BẢNG DỮ LIỆU: Các ngành hàng -->
+    <tr>
+      <th class="table-header">NGÀNH HÀNG</th>
+      <th class="table-header">MỤC TIÊU</th>
+      <th class="table-header">THỰC HIỆN</th>
+      <th class="table-header">HOÀN THÀNH</th>
+    </tr>
+    <!-- Ngành hàng thứ 1 -->
+    <tr class="data-row">
+      <td>
+        <input type="text" class="nganhHangInput dynamic-input" value="1. ICT" oninput="adjustInputSize(this)">
+      </td>
+      <td>
+        <input type="text" class="mucTieuInput dynamic-input"
+          oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0">
+      </td>
+      <td>
+        <input type="text" class="thucHien dynamic-input"
+          oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0">
+      </td>
+      <td class="hoanThanh">0%</td>
+    </tr>
+    <!-- Ngành hàng thứ 2 -->
+    <tr class="data-row">
+      <td>
+        <input type="text" class="nganhHangInput dynamic-input" value="2. VAS" oninput="adjustInputSize(this)">
+      </td>
+      <td>
+        <input type="text" class="mucTieuInput dynamic-input"
+          oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0">
+      </td>
+      <td>
+        <input type="text" class="thucHien dynamic-input"
+          oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0">
+      </td>
+      <td class="hoanThanh">0%</td>
+    </tr>
+  </table>
+
+  <!-- Nút Hiện/Ẩn Tính Năng -->
+  <button class="toggle-button" onclick="toggleFeatures()">Hiện/Ẩn Tính Năng</button>
+  
+  <!-- Nút Gửi Dữ Liệu -->
+  <button class="submit-button" onclick="submitData()">Gửi Dữ Liệu</button>
+  
+  <!-- Container nút Thêm/Xóa ngành hàng -->
+  <div id="featureButtons">
+    <button id="addButton" class="add-button" onclick="hienThiLuaChonThem()">Thêm ngành hàng</button>
+    <button id="deleteButton" class="delete-button" onclick="hienThiLuaChonXoa()">Xóa ngành hàng</button>
+  </div>
+
+  <!-- Khối thêm ngành hàng -->
+  <div id="addSection">
+    <select id="nganhHangAddSelect">
+      <option value="Phụ Kiện">Phụ Kiện</option>
+      <option value="Đồng Hồ">Đồng Hồ</option>
+      <option value="Wearable">Wearable</option>
+      <option value="Sim">Sim</option>
+      <option value="Laptop">Laptop</option>
+      <option value="Điện Tử">Điện Tử</option>
+      <option value="Điện Lạnh">Điện Lạnh</option>
+      <option value="Gia Dụng">Gia Dụng</option>
+    </select>
+    <button class="confirm-button" onclick="themNganhHangDaChon()">Xác nhận</button>
+  </div>
+
+  <!-- Khối xóa ngành hàng -->
+  <div class="delete-section" id="deleteSection">
+    <select id="nganhHangSelect"></select>
+    <button class="confirm-button" onclick="xoaNganhHangDaChon()">Xác nhận</button>
+  </div>
+
+  <script>
+    // Hiển thị ngày hiện tại
+    function displayCurrentDate() {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      document.getElementById('currentDate').textContent = `${day}/${month}/${year}`;
+    }
+    
+    // Tạo các nút tick cho CA LÀM VIỆC (1 đến 6)
+    function initCaLamViec() {
+      const container = document.getElementById('caLamViecContainer');
+      container.innerHTML = '';
+      for (let i = 1; i <= 6; i++) {
+        const span = document.createElement('span');
+        span.textContent = i;
+        span.className = 'caItem';
+        span.onclick = function() {
+          this.classList.toggle('selected');
+        }
+        container.appendChild(span);
+      }
+    }
+
+    function formatNumber(input) {
+      let value = input.value.replace(/[^0-9]/g, '');
+      if (value) {
+        let number = parseInt(value, 10);
+        input.value = number.toLocaleString('vi-VN');
+      } else {
+        input.value = '';
+      }
+      adjustInputSize(input);
+    }
+
+    function tinhHoanThanh(input) {
+      const row = input.closest('tr');
+      const mucTieuInput = row.querySelector('.mucTieuInput');
+      const thucHienInput = row.querySelector('.thucHien');
+      const hoanThanhCell = row.querySelector('.hoanThanh');
+      
+      let mucTieu = parseInt(mucTieuInput.value.replace(/\./g, '') || '0', 10);
+      let thucHien = parseInt(thucHienInput.value.replace(/\./g, '') || '0', 10);
+      let hoanThanh = 0;
+      if (mucTieu > 0) {
+        hoanThanh = (thucHien / mucTieu * 100).toFixed(2);
+        hoanThanhCell.textContent = hoanThanh + '%';
+      } else {
+        hoanThanhCell.textContent = '0%';
+      }
+      if (parseFloat(hoanThanh) >= 99.99) {
+        hoanThanhCell.className = 'hoanThanh above-100';
+      } else if (parseFloat(hoanThanh) < 80) {
+        hoanThanhCell.className = 'hoanThanh below-80';
+      } else {
+        hoanThanhCell.className = 'hoanThanh between-80-100';
+      }
+    }
+
+    function updateTargets() {
+      let targetThangVal = parseInt(document.getElementById('targetThang').value.replace(/[^0-9]/g, '')) || 0;
+      let luyKeVal = parseInt(document.getElementById('luyKe').value.replace(/[^0-9]/g, '')) || 0;
+      let conLai = targetThangVal - luyKeVal;
+      if (conLai <= 0) {
+        document.getElementById('targetConLai').value = "HOÀN THÀNH";
+        document.getElementById('targetConLai').style.color = "#0000FF";
+      } else {
+        if (conLai < 20000000) conLai = 20000000;
+        document.getElementById('targetConLai').value = conLai.toLocaleString('vi-VN');
+        document.getElementById('targetConLai').style.color = "inherit";
+      }
+      let today = new Date();
+      let year = today.getFullYear();
+      let month = today.getMonth();
+      let lastDay = new Date(year, month + 1, 0).getDate();
+      let remainingDays = lastDay - today.getDate() + 1;
+      let targetNgayVal = 0;
+      if (remainingDays > 0) {
+        targetNgayVal = (targetThangVal - luyKeVal) / remainingDays;
+      }
+      // Làm tròn theo hàng trăm nghìn (100,000)
+      let roundedTargetNgay = Math.round(targetNgayVal / 100000) * 100000;
+      document.getElementById('targetNgay').value = roundedTargetNgay.toLocaleString('vi-VN');
+    }
+
+    function adjustInputSize(input) {
+      let minSize = 10;
+      let size = Math.max(minSize, input.value.length + 2);
+      input.size = size;
+    }
+
+    function capNhatLuaChonXoa() {
+      const select = document.getElementById('nganhHangSelect');
+      select.innerHTML = '';
+      const table = document.getElementById('nganhHangTable');
+      const dataRows = table.getElementsByClassName('data-row');
+      for (let i = 2; i < dataRows.length; i++) {
+        const nganhHangInput = dataRows[i].querySelector('.nganhHangInput');
+        if (nganhHangInput) {
+          const option = document.createElement('option');
+          option.value = nganhHangInput.value;
+          option.text = nganhHangInput.value;
+          select.appendChild(option);
+        }
+      }
+    }
+
+    function hienThiLuaChonXoa() {
+      const table = document.getElementById('nganhHangTable');
+      const dataRows = table.getElementsByClassName('data-row');
+      if (dataRows.length <= 2) {
+        alert("Chỉ có 2 ngành hàng ban đầu, không có ngành hàng nào để xóa!");
+        return;
+      }
+      document.getElementById('deleteSection').style.display = 'block';
+      capNhatLuaChonXoa();
+    }
+
+    function xoaNganhHangDaChon() {
+      const select = document.getElementById('nganhHangSelect');
+      const selectedValue = select.value;
+      if (selectedValue) {
+        const table = document.getElementById('nganhHangTable');
+        const dataRows = table.getElementsByClassName('data-row');
+        for (let i = 2; i < dataRows.length; i++) {
+          const nganhHangInput = dataRows[i].querySelector('.nganhHangInput');
+          if (nganhHangInput && nganhHangInput.value === selectedValue) {
+            table.deleteRow(dataRows[i].rowIndex);
+            capNhatSTT();
+            capNhatLuaChonXoa();
+            break;
+          }
+        }
+        select.value = '';
+        if (select.options.length === 0) {
+          document.getElementById('deleteSection').style.display = 'none';
+        }
+        updateDeleteButtonVisibility();
+      }
+    }
+
+    function capNhatSTT() {
+      const table = document.getElementById('nganhHangTable');
+      const dataRows = table.getElementsByClassName('data-row');
+      for (let i = 0; i < dataRows.length; i++) {
+        const nganhHangInput = dataRows[i].querySelector('.nganhHangInput');
+        if (nganhHangInput) {
+          const textAfterNumber = nganhHangInput.value.replace(/^\d+\.\s/, '');
+          nganhHangInput.value = `${i + 1}. ${textAfterNumber}`;
+          adjustInputSize(nganhHangInput);
+        }
+      }
+    }
+
+    function hienThiLuaChonThem() {
+      document.getElementById('addSection').style.display = 'block';
+    }
+
+    function themNganhHangDaChon() {
+      var select = document.getElementById('nganhHangAddSelect');
+      var selectedValue = select.value;
+      const table = document.getElementById('nganhHangTable');
+      const dataRows = table.getElementsByClassName('data-row');
+      const newIndex = dataRows.length + 1;
+      const newRow = table.insertRow(-1);
+      newRow.className = 'data-row';
+      newRow.innerHTML = `
+        <td><input type="text" class="nganhHangInput dynamic-input" value="${newIndex}. ${selectedValue}" oninput="adjustInputSize(this)"></td>
+        <td><input type="text" class="mucTieuInput dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
+        <td><input type="text" class="thucHien dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>
+        <td class="hoanThanh">0%</td>
+      `;
+      adjustInputSize(newRow.querySelector('.nganhHangInput'));
+      capNhatLuaChonXoa();
+      document.getElementById('addSection').style.display = 'none';
+      updateDeleteButtonVisibility();
+    }
+
+    function toggleFeatures() {
+      var featureDiv = document.getElementById('featureButtons');
+      if (featureDiv.style.display === "none" || featureDiv.style.display === "") {
+        featureDiv.style.display = "block";
+        updateDeleteButtonVisibility();
+      } else {
+        featureDiv.style.display = "none";
+      }
+    }
+
+    function updateDeleteButtonVisibility() {
+      const table = document.getElementById('nganhHangTable');
+      const dataRows = table.getElementsByClassName('data-row');
+      var deleteBtn = document.getElementById('deleteButton');
+      if (dataRows.length > 2) {
+        deleteBtn.style.display = "inline-block";
+      } else {
+        deleteBtn.style.display = "none";
+      }
+    }
+
+    // --- PHẦN BAO CAO CUỐI CA ---
+    // Khi tick checkbox, thay đổi background và placeholder của ô USER
+    function baoCaoCuoiCaChanged() {
+      var checkbox = document.getElementById('baoCaoCuoiCaCheckbox');
+      var userInput = document.getElementById('user');
+      if (checkbox.checked) {
+        userInput.style.backgroundColor = 'yellow';
+        userInput.placeholder = 'Nhập USER để tra cứu dữ liệu báo cáo cuối ca';
+      } else {
+        userInput.style.backgroundColor = '';
+        userInput.placeholder = '';
+      }
+    }
+    // Khi ô USER mất focus và checkbox đã tick, gọi hàm fetchBaoCaoData
+    document.getElementById('user').addEventListener('blur', function(){
+      if(document.getElementById('baoCaoCuoiCaCheckbox').checked){
+        fetchBaoCaoData();
+      }
+    });
+    // Hàm fetchBaoCaoData: sử dụng Fetch API để gọi Web App và lấy dữ liệu theo USER và ngày hiện tại
+    function fetchBaoCaoData() {
+      var userVal = document.getElementById('user').value;
+      var currentDate = document.getElementById('currentDate').textContent;
+      if(userVal.trim() === ''){
+        alert("Vui lòng nhập USER để tra cứu dữ liệu báo cáo cuối ca.");
+        return;
+      }
+      // Thay URL bên dưới bằng URL Web App của bạn
+      var webAppUrl = "https://script.google.com/macros/s/AKfycbwscEBFSs1tfEFYQ4wr5_iSJll4U2WY9IZ5znUlVZT_0mBL4AlaP5ZqqH8C7whus3aE-A/exec";
+      var urlWithParams = webAppUrl + "?user=" + encodeURIComponent(userVal) + "&currentDate=" + encodeURIComponent(currentDate);
+      fetch(urlWithParams)
+        .then(function(response) { return response.json(); })
+        .then(function(data) { handleBaoCaoData(data); })
+        .catch(function(error) { alert("Lỗi khi lấy dữ liệu: " + error); });
+    }
+    // Hàm xử lý dữ liệu trả về và cập nhật các ô dữ liệu
+    function handleBaoCaoData(data) {
+      if(!data) {
+        alert("Không tìm thấy dữ liệu báo cáo cuối ca cho USER này. Vui lòng nhập thủ công.");
+        return;
+      }
+      document.getElementById('targetThang').value = data.targetThang || '';
+      document.getElementById('luyKe').value = data.luyKe || '';
+      document.getElementById('targetConLai').value = data.targetConLai || '';
+      document.getElementById('targetNgay').value = data.targetNgay || '';
+      document.getElementById('tenNhanVien').value = data.nhanVien || '';
+      document.getElementById('realtime').value = data.realtime || '';
+      
+      // Cập nhật bảng ngành hàng: xoá các dòng cũ và thêm dòng mới từ data.industries
+      var table = document.getElementById('nganhHangTable');
+      var rows = table.getElementsByClassName('data-row');
+      while(rows.length > 0){
+        table.deleteRow(rows[0].rowIndex);
+      }
+      if(data.industries && data.industries.length > 0){
+        data.industries.forEach(function(ind, index){
+          var newRow = table.insertRow(-1);
+          newRow.className = 'data-row';
+          newRow.innerHTML = '<td><input type="text" class="nganhHangInput dynamic-input" value="' + (index+1) + '. ' + ind.tenMucTieu + '" oninput="adjustInputSize(this)"></td>' +
+                             '<td><input type="text" class="mucTieuInput dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="' + (ind.mucTieu || 0) + '"></td>' +
+                             '<td><input type="text" class="thucHien dynamic-input" oninput="formatNumber(this); tinhHoanThanh(this); adjustInputSize(this)" value="0"></td>' +
+                             '<td class="hoanThanh">0%</td>';
+        });
+      }
+    }
+    // --- KẾT THÚC PHẦN BAO CAO CUỐI CA ---
+
+    // Hàm gửi dữ liệu qua POST đến Web App (Apps Script)
+    function submitData() {
+      const industries = [];
+      const table = document.getElementById('nganhHangTable');
+      const dataRows = table.getElementsByClassName('data-row');
+      for (let i = 0; i < dataRows.length; i++) {
+        const tenMucTieuEl = dataRows[i].querySelector('.nganhHangInput');
+        const mucTieuEl = dataRows[i].querySelector('.mucTieuInput');
+        if (tenMucTieuEl && mucTieuEl) {
+          industries.push({
+            tenMucTieu: tenMucTieuEl.value,
+            mucTieu: mucTieuEl.value
+          });
+        }
+      }
+      
+      const data = {
+        currentDate: document.getElementById('currentDate').textContent,
+        sieuThi: document.getElementById('sieuThiSelect').value,
+        nhanVien: document.getElementById('tenNhanVien').value,
+        user: document.getElementById('user').value,
+        targetThang: document.getElementById('targetThang').value,
+        luyKe: document.getElementById('luyKe').value,
+        targetConLai: document.getElementById('targetConLai').value,
+        targetNgay: document.getElementById('targetNgay').value,
+        realtime: document.getElementById('realtime').value,
+        industries: industries
+      };
+      
+      console.log("Data to submit:", data);
+      
+      // Thay URL bên dưới bằng URL Web App của bạn
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwscEBFSs1tfEFYQ4wr5_iSJll4U2WY9IZ5znUlVZT_0mBL4AlaP5ZqqH8C7whus3aE-A/exec';
+      
+      fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        alert("Dữ liệu đã được gửi thành công!");
+      })
+      .catch(error => {
+        console.error('Error!', error.message);
+        alert("Có lỗi xảy ra khi gửi dữ liệu.");
+      });
+    }
+
+    window.onload = function() {
+      updateDeleteButtonVisibility();
+      initCaLamViec();
+      displayCurrentDate();
+    }
+  </script>
+</body>
+</html>
