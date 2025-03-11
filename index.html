@@ -105,10 +105,10 @@
   </style>
 </head>
 <body>
-  <!-- Hiển thị ngày/tháng/năm và checkbox (checkbox chỉ hiển thị, không xử lý gì) -->
+  <!-- Hiển thị ngày/tháng/năm và checkbox (checkbox chỉ hiển thị, không xử lý lấy dữ liệu) -->
   <div class="current-date" id="currentDateContainer">
     <span id="currentDate"></span>
-    <input type="checkbox" id="baoCaoCuoiCaCheckbox">
+    <input type="checkbox" id="baoCaoCuoiCaCheckbox" onchange="baoCaoCuoiCaChanged()">
     <label for="baoCaoCuoiCaCheckbox">Báo Cáo Cuối Ca</label>
   </div>
 
@@ -456,6 +456,19 @@
       }
     }
     
+    // --- PHẦN BAO CAO CUỐI CA (checkbox chỉ hiển thị, không xử lý gì) ---
+    function baoCaoCuoiCaChanged() {
+      var checkbox = document.getElementById('baoCaoCuoiCaCheckbox');
+      var userInput = document.getElementById('user');
+      if (checkbox.checked) {
+        userInput.style.backgroundColor = 'yellow';
+        userInput.placeholder = 'Nhập USER để tra cứu dữ liệu báo cáo cuối ca';
+      } else {
+        userInput.style.backgroundColor = '';
+        userInput.placeholder = '';
+      }
+    }
+    
     // --- PHẦN GỬI DỮ LIỆU ---
     function submitData() {
       const industries = [];
@@ -483,7 +496,6 @@
         targetNgay: document.getElementById('targetNgay').value,
         realtime: document.getElementById('realtime').value,
         industries: industries,
-        // Nếu cần, bạn có thể truyền thêm thuộc tính reportEnd
         reportEnd: false
       };
       
