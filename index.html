@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HIỆU QUẢ NGÀNH HÀNG THEO NHÂN VIÊN</title>
@@ -467,66 +467,70 @@
   deleteSection.style.display = 'none';
 
   // Chụp ảnh màn hình
-  html2canvas(document.body).then(canvas => {
-    // Hiển thị lại các phần tử đã ẩn
-    baoCaoContainer.style.display = '';
-    toggleButton.style.display = '';
-    submitButton.style.display = '';
-    featureButtons.style.display = '';
-    addSection.style.display = '';
-    deleteSection.style.display = '';
+  domtoimage.toPng(document.body)
+    .then(function (dataUrl) {
+      // Hiển thị lại các phần tử đã ẩn
+      baoCaoContainer.style.display = '';
+      toggleButton.style.display = '';
+      submitButton.style.display = '';
+      featureButtons.style.display = '';
+      addSection.style.display = '';
+      deleteSection.style.display = '';
 
-    // Tạo link để tải ảnh xuống
-    const imgData = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = imgData;
-    link.download = 'bao_cao.png';
-    link.click();
+      // Tạo link để tải ảnh xuống
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = 'bao_cao.png';
+      link.click();
 
-    // Tiếp tục gửi dữ liệu
-    const industries = [];
-    const table = document.getElementById('nganhHangTable');
-    const dataRows = table.getElementsByClassName('data-row');
-    for (let i = 0; i < dataRows.length; i++) {
-      const tenMucTieuEl = dataRows[i].querySelector('.nganhHangInput');
-      const mucTieuEl = dataRows[i].querySelector('.mucTieuInput');
-      if (tenMucTieuEl && mucTieuEl) {
-        industries.push({
-          tenMucTieu: tenMucTieuEl.value,
-          mucTieu: mucTieuEl.value
-        });
+      // Tiếp tục gửi dữ liệu
+      const industries = [];
+      const table = document.getElementById('nganhHangTable');
+      const dataRows = table.getElementsByClassName('data-row');
+      for (let i = 0; i < dataRows.length; i++) {
+        const tenMucTieuEl = dataRows[i].querySelector('.nganhHangInput');
+        const mucTieuEl = dataRows[i].querySelector('.mucTieuInput');
+        if (tenMucTieuEl && mucTieuEl) {
+          industries.push({
+            tenMucTieu: tenMucTieuEl.value,
+            mucTieu: mucTieuEl.value
+          });
+        }
       }
-    }
 
-    const data = {
-      currentDate: document.getElementById('currentDate').textContent,
-      sieuThi: document.getElementById('sieuThiSelect').value,
-      nhanVien: document.getElementById('tenNhanVien').value,
-      user: document.getElementById('user').value,
-      targetThang: document.getElementById('targetThang').value,
-      luyKe: document.getElementById('luyKe').value,
-      targetConLai: document.getElementById('targetConLai').value,
-      targetNgay: document.getElementById('targetNgay').value,
-      realtime: document.getElementById('realtime').value,
-      industries: industries
-    };
+      const data = {
+        currentDate: document.getElementById('currentDate').textContent,
+        sieuThi: document.getElementById('sieuThiSelect').value,
+        nhanVien: document.getElementById('tenNhanVien').value,
+        user: document.getElementById('user').value,
+        targetThang: document.getElementById('targetThang').value,
+        luyKe: document.getElementById('luyKe').value,
+        targetConLai: document.getElementById('targetConLai').value,
+        targetNgay: document.getElementById('targetNgay').value,
+        realtime: document.getElementById('realtime').value,
+        industries: industries
+      };
 
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyFd4wW0uVBk6MiWwjy4QHnhSZ6V9TJTEEizILm9tt4TPuaghc2kSvgBUw0xAVvU7x3VA/exec';
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbyFd4wW0uVBk6MiWwjy4QHnhSZ6V9TJTEEizILm9tt4TPuaghc2kSvgBUw0xAVvU7x3VA/exec';
 
-    fetch(scriptURL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        alert("Dữ liệu đã được gửi thành công!");
+      })
+      .catch(error => {
+        console.error('Error!', error.message);
+        alert("Có lỗi xảy ra khi gửi dữ liệu.");
+      });
     })
-    .then(response => {
-      alert("Dữ liệu đã được gửi thành công!");
-    })
-    .catch(error => {
-      console.error('Error!', error.message);
-      alert("Có lỗi xảy ra khi gửi dữ liệu.");
+    .catch(function (error) {
+      console.error('Error capturing image:', error);
+      alert("Có lỗi xảy ra khi chụp ảnh màn hình.");
     });
-  });
 }
 
     // Hàm xử lý khi checkbox Báo Cáo Cuối Ca được thay đổi trạng thái
