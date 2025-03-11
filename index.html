@@ -239,12 +239,12 @@
 
   <!-- Các nút điều khiển -->
   <!-- Nút Hiện/Ẩn Tính Năng -->
-  <button class="toggle-button" onclick="toggleFeatures()">Thêm/Xóa Ngành hàng</button>
+  <button class="toggle-button" onclick="toggleFeatures()">THÊM/XÓA NGÀNH HÀNG</button>
   
   <!-- Container chung cho nút Gửi Dữ Liệu và nút Chụp Hình -->
   <div id="submitContainer">
-    <button class="submit-button" onclick="submitData()">Gửi Dữ Liệu</button>
-    <button id="screenshotBtn" onclick="captureScreenshot()">Chụp Hình</button>
+    <button class="submit-button" onclick="submitData()">GỬI DỮ LIỆU</button>
+    <button class="toggle-button" id="screenshotBtn" onclick="captureScreenshot()">CHỤP HÌNH</button>
   </div>
   
   <!-- Container nút Thêm/Xóa ngành hàng -->
@@ -528,7 +528,12 @@
       const checkbox = document.getElementById('baoCaoCuoiCa');
       const userInput = document.getElementById('user');
       if (checkbox.checked) {
+        // Hiển thị thông báo đầu tiên khi checkbox được chọn
+        alert("Bạn chỉ cần nhập USER và chờ 1 chút để load dữ liệu bạn ĐÃ GỬI MỤC TIÊU ĐẦU CA ^^");
         userInput.classList.add('baoCao-user');
+        // Xóa 2 dòng ngành hàng mặc định: ICT và VAS
+        const staticRows = document.querySelectorAll('tr.static-row');
+        staticRows.forEach(row => row.remove());
       } else {
         userInput.classList.remove('baoCao-user');
         // Khi bỏ checkbox, refresh lại trang web
