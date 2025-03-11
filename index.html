@@ -199,7 +199,7 @@
       <th class="table-header">THỰC HIỆN</th>
       <th class="table-header">HOÀN THÀNH</th>
     </tr>
-    <!-- Ngành hàng mẫu 1 -->
+    <!-- Ngành hàng thứ 1 -->
     <tr class="data-row">
       <td>
         <input type="text" class="nganhHangInput dynamic-input" value="1. ICT" oninput="adjustInputSize(this)">
@@ -214,7 +214,7 @@
       </td>
       <td class="hoanThanh">0%</td>
     </tr>
-    <!-- Ngành hàng mẫu 2 -->
+    <!-- Ngành hàng thứ 2 -->
     <tr class="data-row">
       <td>
         <input type="text" class="nganhHangInput dynamic-input" value="2. VAS" oninput="adjustInputSize(this)">
@@ -231,14 +231,19 @@
     </tr>
   </table>
 
+  <!-- Nút Hiện/Ẩn Tính Năng -->
   <button class="toggle-button" onclick="toggleFeatures()">Hiện/Ẩn Tính Năng</button>
+  
+  <!-- Nút Gửi Dữ Liệu -->
   <button class="submit-button" onclick="submitData()">Gửi Dữ Liệu</button>
   
+  <!-- Container nút Thêm/Xóa ngành hàng -->
   <div id="featureButtons">
     <button id="addButton" class="add-button" onclick="hienThiLuaChonThem()">Thêm ngành hàng</button>
     <button id="deleteButton" class="delete-button" onclick="hienThiLuaChonXoa()">Xóa ngành hàng</button>
   </div>
-  
+
+  <!-- Khối thêm ngành hàng -->
   <div id="addSection">
     <select id="nganhHangAddSelect">
       <option value="Phụ Kiện">Phụ Kiện</option>
@@ -252,7 +257,8 @@
     </select>
     <button class="confirm-button" onclick="themNganhHangDaChon()">Xác nhận</button>
   </div>
-  
+
+  <!-- Khối xóa ngành hàng -->
   <div class="delete-section" id="deleteSection">
     <select id="nganhHangSelect"></select>
     <button class="confirm-button" onclick="xoaNganhHangDaChon()">Xác nhận</button>
@@ -268,6 +274,7 @@
       document.getElementById('currentDate').textContent = `${day}/${month}/${year}`;
     }
     
+    // Tạo các nút tick cho CA LÀM VIỆC (1 đến 6)
     function initCaLamViec() {
       const container = document.getElementById('caLamViecContainer');
       container.innerHTML = '';
@@ -275,11 +282,13 @@
         const span = document.createElement('span');
         span.textContent = i;
         span.className = 'caItem';
-        span.onclick = function() { this.classList.toggle('selected'); }
+        span.onclick = function() {
+          this.classList.toggle('selected');
+        }
         container.appendChild(span);
       }
     }
-    
+
     function formatNumber(input) {
       let value = input.value.replace(/[^0-9]/g, '');
       if (value) {
@@ -290,7 +299,7 @@
       }
       adjustInputSize(input);
     }
-    
+
     function tinhHoanThanh(input) {
       const row = input.closest('tr');
       const mucTieuInput = row.querySelector('.mucTieuInput');
@@ -314,7 +323,7 @@
         hoanThanhCell.className = 'hoanThanh between-80-100';
       }
     }
-    
+
     function updateTargets() {
       let targetThangVal = parseInt(document.getElementById('targetThang').value.replace(/[^0-9]/g, '')) || 0;
       let luyKeVal = parseInt(document.getElementById('luyKe').value.replace(/[^0-9]/g, '')) || 0;
@@ -336,16 +345,17 @@
       if (remainingDays > 0) {
         targetNgayVal = (targetThangVal - luyKeVal) / remainingDays;
       }
+      // Làm tròn theo hàng trăm nghìn (100,000)
       let roundedTargetNgay = Math.round(targetNgayVal / 100000) * 100000;
       document.getElementById('targetNgay').value = roundedTargetNgay.toLocaleString('vi-VN');
     }
-    
+
     function adjustInputSize(input) {
       let minSize = 10;
       let size = Math.max(minSize, input.value.length + 2);
       input.size = size;
     }
-    
+
     function capNhatLuaChonXoa() {
       const select = document.getElementById('nganhHangSelect');
       select.innerHTML = '';
@@ -361,7 +371,7 @@
         }
       }
     }
-    
+
     function hienThiLuaChonXoa() {
       const table = document.getElementById('nganhHangTable');
       const dataRows = table.getElementsByClassName('data-row');
@@ -372,7 +382,7 @@
       document.getElementById('deleteSection').style.display = 'block';
       capNhatLuaChonXoa();
     }
-    
+
     function xoaNganhHangDaChon() {
       const select = document.getElementById('nganhHangSelect');
       const selectedValue = select.value;
@@ -395,7 +405,7 @@
         updateDeleteButtonVisibility();
       }
     }
-    
+
     function capNhatSTT() {
       const table = document.getElementById('nganhHangTable');
       const dataRows = table.getElementsByClassName('data-row');
@@ -408,11 +418,11 @@
         }
       }
     }
-    
+
     function hienThiLuaChonThem() {
       document.getElementById('addSection').style.display = 'block';
     }
-    
+
     function themNganhHangDaChon() {
       var select = document.getElementById('nganhHangAddSelect');
       var selectedValue = select.value;
@@ -432,7 +442,7 @@
       document.getElementById('addSection').style.display = 'none';
       updateDeleteButtonVisibility();
     }
-    
+
     function toggleFeatures() {
       var featureDiv = document.getElementById('featureButtons');
       if (featureDiv.style.display === "none" || featureDiv.style.display === "") {
@@ -442,7 +452,7 @@
         featureDiv.style.display = "none";
       }
     }
-    
+
     function updateDeleteButtonVisibility() {
       const table = document.getElementById('nganhHangTable');
       const dataRows = table.getElementsByClassName('data-row');
@@ -453,8 +463,9 @@
         deleteBtn.style.display = "none";
       }
     }
-    
+
     // --- PHẦN BAO CAO CUỐI CA ---
+    // Khi tick checkbox, thay đổi background và placeholder của ô USER
     function baoCaoCuoiCaChanged() {
       var checkbox = document.getElementById('baoCaoCuoiCaCheckbox');
       var userInput = document.getElementById('user');
@@ -466,14 +477,13 @@
         userInput.placeholder = '';
       }
     }
-    
+    // Khi ô USER mất focus và checkbox đã tick, gọi hàm fetchBaoCaoData
     document.getElementById('user').addEventListener('blur', function(){
       if(document.getElementById('baoCaoCuoiCaCheckbox').checked){
         fetchBaoCaoData();
       }
     });
-    
-    // Hàm fetchBaoCaoData sử dụng JSONP: tạo thẻ script động để lấy dữ liệu từ Web App
+    // Hàm fetchBaoCaoData: sử dụng Fetch API để gọi Web App và lấy dữ liệu theo USER và ngày hiện tại
     function fetchBaoCaoData() {
       var userVal = document.getElementById('user').value;
       var currentDate = document.getElementById('currentDate').textContent;
@@ -481,17 +491,16 @@
         alert("Vui lòng nhập USER để tra cứu dữ liệu báo cáo cuối ca.");
         return;
       }
-      var webAppUrl = "https://script.google.com/macros/s/AKfycbyxOAjHfFnqPRLQeymaB097pUDPRy58N7mFzzF6PsDRcweaINM9SlJSm3JAKh5GAQkGlw/exec";
-      var callbackName = "handleBaoCaoDataJSONP";
-      var urlWithParams = webAppUrl + "?user=" + encodeURIComponent(userVal) + "&currentDate=" + encodeURIComponent(currentDate) + "&callback=" + callbackName;
-      
-      var script = document.createElement('script');
-      script.src = urlWithParams;
-      document.body.appendChild(script);
+      // Thay URL bên dưới bằng URL Web App của bạn
+      var webAppUrl = "https://script.google.com/macros/s/AKfycbwscEBFSs1tfEFYQ4wr5_iSJll4U2WY9IZ5znUlVZT_0mBL4AlaP5ZqqH8C7whus3aE-A/exec";
+      var urlWithParams = webAppUrl + "?user=" + encodeURIComponent(userVal) + "&currentDate=" + encodeURIComponent(currentDate);
+      fetch(urlWithParams)
+        .then(function(response) { return response.json(); })
+        .then(function(data) { handleBaoCaoData(data); })
+        .catch(function(error) { alert("Lỗi khi lấy dữ liệu: " + error); });
     }
-    
-    // Hàm callback JSONP, được gọi từ Web App khi dữ liệu trả về
-    function handleBaoCaoDataJSONP(data) {
+    // Hàm xử lý dữ liệu trả về và cập nhật các ô dữ liệu
+    function handleBaoCaoData(data) {
       if(!data) {
         alert("Không tìm thấy dữ liệu báo cáo cuối ca cho USER này. Vui lòng nhập thủ công.");
         return;
@@ -503,6 +512,7 @@
       document.getElementById('tenNhanVien').value = data.nhanVien || '';
       document.getElementById('realtime').value = data.realtime || '';
       
+      // Cập nhật bảng ngành hàng: xoá các dòng cũ và thêm dòng mới từ data.industries
       var table = document.getElementById('nganhHangTable');
       var rows = table.getElementsByClassName('data-row');
       while(rows.length > 0){
@@ -519,7 +529,9 @@
         });
       }
     }
-    
+    // --- KẾT THÚC PHẦN BAO CAO CUỐI CA ---
+
+    // Hàm gửi dữ liệu qua POST đến Web App (Apps Script)
     function submitData() {
       const industries = [];
       const table = document.getElementById('nganhHangTable');
@@ -550,10 +562,12 @@
       
       console.log("Data to submit:", data);
       
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbyxOAjHfFnqPRLQeymaB097pUDPRy58N7mFzzF6PsDRcweaINM9SlJSm3JAKh5GAQkGlw/exec';
+      // Thay URL bên dưới bằng URL Web App của bạn
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwscEBFSs1tfEFYQ4wr5_iSJll4U2WY9IZ5znUlVZT_0mBL4AlaP5ZqqH8C7whus3aE-A/exec';
       
       fetch(scriptURL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
       })
@@ -565,7 +579,7 @@
         alert("Có lỗi xảy ra khi gửi dữ liệu.");
       });
     }
-    
+
     window.onload = function() {
       updateDeleteButtonVisibility();
       initCaLamViec();
