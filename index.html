@@ -1,674 +1,139 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Báo cáo Doanh thu</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* CSS cho nút ẩn/hiện và Sidebar */
-    .toggle-btn {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #333;
-    }
-
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 250px;
-      height: 100%;
-      background-color: #343a40;
-      color: white;
-      transform: translateX(0);
-      transition: transform 0.3s ease;
-      z-index: 999;
-    }
-
-    .sidebar a {
-      color: white;
-      padding: 15px;
-      text-decoration: none;
-      display: block;
-      font-size: 16px;
-    }
-
-    .sidebar a:hover {
-      background-color: #495057;
-    }
-
-    .sidebar-hidden .sidebar {
-      transform: translateX(-250px);
-    }
-
-    .content {
-      margin-left: 250px;
-      padding: 20px;
-      transition: margin-left 0.3s ease;
-    }
-
-    .sidebar-hidden .content {
-      margin-left: 0;
-    }
-
-    /* CSS cho các thẻ thông tin */
-    #tong-quan {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-
-    .card {
-      min-width: 250px;
-      width: 100%;
-      box-sizing: border-box;
-      margin-bottom: 20px;
-      font-weight: bold;
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      background-color: #fff; /* Đảm bảo nền trắng để hiển thị đúng trên ảnh chụp */
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .card-title {
-      font-weight: bold;
-      color: #004aad;
-    }
-
-    .positive {
-      color: #28a745;
-      font-size: 0.9em;
-    }
-
-    .negative {
-      color: #dc3545;
-      font-size: 0.9em;
-    }
-
-    h1 {
-      margin-top: 20px;
-      margin-bottom: 30px;
-      font-weight: bold;
-      color: #004aad;
-      text-align: center;
-    }
-
-    .percentage {
-      font-weight: bold;
-    }
-
-    .red {
-      color: red;
-    }
-
-    .green {
-      color: green;
-    }
-
-    #toggle-filter {
-      background-color: #004aad;
-      border: none;
-      font-weight: bold;
-      color: white;
-      font-size: 14px;
-      padding: 8px 15px;
-      border-radius: 5px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    #toggle-filter:hover {
-      background-color: #0056b3;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    .filter-section {
-      display: none;
-      padding: 10px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-bottom: 10px;
-    }
-
-    .filter-section button {
-      margin: 5px;
-    }
-
-    #nganh-hang-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 10px;
-      font-weight: bold;
-    }
-
-    #nganh-hang-table th {
-      background-color: #004aad;
-      color: white;
-      font-weight: bold;
-      padding: 10px;
-      text-align: left;
-    }
-
-    #nganh-hang-table td {
-      padding: 10px;
-      font-weight: bold;
-      background-color: white;
-      border-radius: 5px;
-    }
-
-    #nganh-hang-table tr:hover td {
-      background-color: #f1f1f1;
-      font-weight: bold;
-    }
-
-    #nganh-hang-table td:first-child {
-      font-weight: bold;
-    }
-
-    .apple {
-      color: gray;
-      font-style: italic;
-    }
-
-    .samsung {
-      color: blue;
-      font-style: italic;
-    }
-
-    .xiaomi {
-      color: orange;
-      font-style: italic;
-    }
-
-    .oppo {
-      color: green;
-      font-style: italic;
-    }
-
-    .vivo {
-      color: skyblue;
-      font-style: italic;
-    }
-
-    .negative-bold {
-      font-weight: bold;
-      color: red;
-    }
-
-    .positive-bold {
-      font-weight: bold;
-      color: green;
-    }
-
-    .chuphinh {
-      background-color: #004aad;
-      border: none;
-      font-weight: bold;
-      color: white;
-      font-size: 14px;
-      padding: 8px 15px;
-      border-radius: 5px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .chuphinh:hover {
-      background-color: #0056b3;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    /* Responsive cho điện thoại */
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-250px);
-      }
-
-      .content {
-        margin-left: 0;
-      }
-
-      .sidebar-hidden .sidebar {
-        transform: translateX(0);
-      }
-
-      #tong-quan {
-        grid-template-columns: 1fr;
-      }
-
-      .card {
-        min-width: 100%; /* Đảm bảo thẻ chiếm toàn bộ chiều rộng trên điện thoại */
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Công Việc</title>
+    <style>
+        /* CSS giữ nguyên */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f5f7fa; padding: 20px; color: #001C44; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        .header { background: #001C44; color: white; padding: 20px; text-align: center; }
+        .header h1 { font-size: 24px; }
+        .task-form { padding: 20px; border-bottom: 1px solid #eee; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input[type="text"], select, input[type="date"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .time-group { display: flex; gap: 10px; }
+        .time-group select { width: 50%; }
+        button { background: #2D99AE; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; transition: background 0.3s; }
+        button:hover { background: #0C5776; }
+        .task-list { padding: 20px; }
+        .task-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.2s; }
+        .task-item:hover { background: #f8f9fa; }
+        .task-info span { display: block; font-size: 14px; }
+        .task-type { padding: 5px 10px; border-radius: 15px; color: white; font-size: 12px; }
+        .urgent { background: #dc3545; }
+        .normal { background: #0C5776; }
+    </style>
 </head>
 <body>
-  <button id="toggle-sidebar" class="toggle-btn">
-    <i class="fas fa-bars"></i>
-  </button>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h4 class="text-center text-white">BI</h4>
-    <a href="#tong-quan"><i class="fas fa-chart-line"></i> Tổng Quan</a>
-    <a href="#nganh-hang"><i class="fas fa-boxes"></i> Ngành Hàng</a>
-    <a href="#nhan-vien"><i class="fas fa-users"></i> Nhân Viên</a>
-    <a href="#thi-dua"><i class="fas fa-trophy"></i> Thi Đua</a>
-  </div>
-
-  <!-- Nội dung chính -->
-  <div class="content">
-    <button id="capture-button" class="chuphinh">Chụp hình</button>
-    <h1>BÁO CÁO DOANH THU</h1>
-
-    <div id="tong-quan">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fas fa-chart-bar"></i> Doanh Thu Lũy Kế</h5>
-          <p class="card-text">▹ Lũy kế :  <span id="luy-ke"></span> <span class="positive" id="hieu-qua-luy-ke"></span></p>
-          <p class="card-text">▹ DKHT :  <span id="dkht-luy-ke"></span></p>
-          <p class="card-text"><span id="ti-le-tang-giam"></span></p>
+    <div class="container">
+        <div class="header">
+            <h1>Danh Sách Công Việc</h1>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Doanh Thu Quy Đổi</h5>
-          <p class="card-text">▹ Lũy kế :  <span id="doanh-thu-qui-doi"></span></p>
-          <p class="card-text">▹ Hiệu quả qui đổi :  <span id="hieu-qua-qui-doi"></span></p>
-          <p class="card-text">▹ Tỷ trọng qui đổi :  <span id="ty-trong-quy-doi"></span></p>
+        <div class="task-form">
+            <form id="taskForm">
+                <div class="form-group">
+                    <label>Tên Công Việc</label>
+                    <input type="text" id="taskName" required>
+                </div>
+                <div class="form-group">
+                    <label>Loại</label>
+                    <select id="taskType" required>
+                        <option value="urgent">Gấp</option>
+                        <option value="normal">Bình Thường</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Deadline</label>
+                    <input type="date" id="taskDate" required>
+                    <div class="time-group">
+                        <select id="taskHour" required></select>
+                        <select id="taskMinute" required>
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Thêm Công Việc</button>
+            </form>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fas fa-bullseye"></i> Target</h5>
-          <p class="card-text">▹ Target :  <span id="target"></span></p>
-          <p class="card-text">▹ DKHT :  <span id="dkht-target"></span></p>
-          <p class="card-text">▹ %DKHT :  <span id="percent-dkht-target" class="percentage"></span></p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fas fa-users"></i> TLPV Thành Công ☞ <span id="ti-le-pvtc"></span></h5>
-          <p class="card-text">▹ Lượt khách :  <span id="luot-khach"></span></p>
-          <p class="card-text">▹ Tổng bill :  <span id="tong-bill"></span></p>
-          <p class="card-text">▹ Số bill bán hàng :  <span id="so-bill-ban-hang"></span></p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fas fa-credit-card"></i> Trả Góp</h5>
-          <p class="card-text">▹ Tỷ trọng trả góp :  <span id="ty-trong-tra-gop" class="percentage"></span></p>
-          <p class="card-text">.</p>
-          <p class="card-text">.</p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fas fa-box-open"></i> Bán Kèm</h5>
-          <p class="card-text">▹ Số bill bán kèm :  <span id="so-bill-ban-kem"></span></p>
-          <p class="card-text">▹ Tỷ lệ bán kèm :  <span id="ty-le-ban-kem" class="percentage"></span></p>
-          <p class="card-text">▹ Tỷ lệ SP bán kèm :  <span id="ty-le-sp-ban-kem" class="percentage"></span></p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fas fa-tag"></i> Đơn Giá Chủ Lực</h5>
-          <p class="card-text">📱 Điện Thoại :  <span id="danh-gia-dien-thoai"></span></p>
-          <p class="card-text">💻 Laptop :  <span id="danh-gia-laptop"></span></p>
-          <p class="card-text">📟 Tablet :  <span id="danh-gia-tablet"></span></p>
-        </div>
-      </div>
+        <div class="task-list" id="taskList"></div>
     </div>
 
-    <!-- Bảng dữ liệu Ngành Hàng -->
-    <h3 class="card-title" id="nganh-hang">
-      <i class="fas fa-chart-bar"></i> Bảng Ngành Hàng
-      <button type="button" id="toggle-filter" class="btn btn-sm btn-primary ml-3">
-        <i class="fas fa-filter"></i> Tùy Chọn Ngành Hàng
-      </button>
-    </h3>
-    <div id="filter-section" class="filter-section">
-      <div class="mb-2">
-        <button type="button" id="select-all" class="btn btn-secondary btn-sm">Chọn tất cả</button>
-        <button type="button" id="deselect-all" class="btn btn-secondary btn-sm">Bỏ chọn tất cả</button>
-        <button type="button" id="apply-filter" class="btn btn-primary btn-sm ml-2">Xác nhận</button>
-      </div>
-      <div id="checkbox-container" class="row"></div>
-    </div>
-    <div style="overflow-x: auto;">
-      <table class="table" id="nganh-hang-table">
-        <thead>
-          <tr>
-            <th>Nhóm hàng</th>
-            <th>Số lượng</th>
-            <th>Doanh thu qui đổi</th>
-            <th>+/- Cùng Kỳ</th>
-            <th>Đơn Giá</th>
-            <th>Lãi Gộp</th>
-            <th>DT Trả Góp</th>
-          </tr>
-        </thead>
-        <tbody id="table-body">
-          <!-- Dữ liệu ngành hàng sẽ được thêm vào đây -->
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <script>
-    // Hàm định dạng số với dấu phân cách hàng nghìn
-    function formatNumber(x) {
-      if (x == null || x == undefined) return "";
-      let num = Number(x);
-      if (isNaN(num)) return x;
-      const sign = num < 0 ? "-" : "";
-      num = Math.abs(num);
-      return sign + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
-
-    // Hàm áp dụng định dạng màu sắc dựa trên ngưỡng cho trước
-    function applyConditionalFormatting(elementId, value, thresholds) {
-      const element = document.getElementById(elementId);
-      if (value < thresholds[0]) {
-        element.classList.add("red");
-        element.classList.remove("green");
-      } else {
-        element.classList.add("green");
-        element.classList.remove("red");
-      }
-    }
-
-    // Ẩn phần tùy chọn ngành hàng ban đầu và gắn sự kiện nút Tùy Chọn Ngành Hàng
-    document.getElementById("filter-section").style.display = "none";
-    document.getElementById("toggle-filter").addEventListener("click", function() {
-      const filterSection = document.getElementById("filter-section");
-      if (filterSection.style.display === "none") {
-        filterSection.style.display = "block";
-      } else {
-        filterSection.style.display = "none";
-      }
-    });
-
-    // Fetch dữ liệu từ Google Apps Script (Web App)
-    fetch("https://script.google.com/macros/s/AKfycbwN0K17SYU7F5NOXoAcB52VkG3w-GYKgOdXiRVpSC44xO95L-65ydvaSp1IMAvpRuLKOw/exec")
-      .then(response => response.json())
-      .then(data => {
-        // Cập nhật các thẻ tổng quan với dữ liệu từ API
-        document.getElementById("luy-ke").textContent = formatNumber(data.doanhThuLuyKe * 1000);
-        document.getElementById("dkht-luy-ke").textContent = formatNumber(data.dkhtLuyKe * 1000);       
-        document.getElementById("hieu-qua-luy-ke").textContent = `${(data.doanhThuGiamLuyKe * 100).toFixed(2)}%`;  
-        applyConditionalFormatting("hieu-qua-luy-ke", data.doanhThuGiamLuyKe, [0.0]);
-        
-        document.getElementById("doanh-thu-qui-doi").textContent = formatNumber(data.doanhThuQuiDoi * 1000);
-        document.getElementById("hieu-qua-qui-doi").textContent = formatNumber(data.hieuQuaQuiDoiDT * 1000);
-        document.getElementById("ty-trong-quy-doi").textContent = `${(data.hieuQuaQuiDoi * 100).toFixed(2)}%`;
-        applyConditionalFormatting("ty-trong-quy-doi", data.hieuQuaQuiDoi, [0.30]);
-        applyConditionalFormatting("percent-dkht-target", data.percentDkhtTarget, [1]);
-        
-        document.getElementById("target").textContent = formatNumber(data.target * 1000);
-        document.getElementById("dkht-target").textContent = formatNumber(data.dkhtTarget * 1000);
-        document.getElementById("percent-dkht-target").textContent = `${(data.percentDkhtTarget * 100).toFixed(2)}%`;
-        
-        document.getElementById("danh-gia-dien-thoai").textContent = data.donGiaDienThoai;
-        document.getElementById("danh-gia-laptop").textContent = data.donGiaLaptop;
-        document.getElementById("danh-gia-tablet").textContent = data.donGiaTablet;
-        applyConditionalFormatting("danh-gia-dien-thoai", data.donGiaDienThoai, [8]);
-        applyConditionalFormatting("danh-gia-laptop", data.donGiaLaptop, [10]);
-        applyConditionalFormatting("danh-gia-tablet", data.donGiaTablet, [7]);
-        
-        document.getElementById("luot-khach").textContent = data.luotKhach;
-        document.getElementById("ti-le-pvtc").textContent = `${(data.tiLePhucVuThanhCong * 100).toFixed(2)}%`;
-        applyConditionalFormatting("ti-le-pvtc", data.tiLePhucVuThanhCong, [0.15])
-        document.getElementById("tong-bill").textContent = formatNumber(data.tongBill);
-        document.getElementById("so-bill-ban-hang").textContent = data.soBillBanHang;
-        
-        document.getElementById("ty-trong-tra-gop").textContent = `${(data.tyTrongTraGop * 100).toFixed(2)}%`;
-        applyConditionalFormatting("ty-trong-tra-gop", data.tyTrongTraGop, [0.40]);
-        
-        document.getElementById("so-bill-ban-kem").textContent = data.soBillBanKem;
-        document.getElementById("ty-le-ban-kem").textContent = `${(data.tyLeBanKem * 100).toFixed(2)}%`;
-        document.getElementById("ty-le-sp-ban-kem").textContent = `${(data.tyLeSPBanKem * 100).toFixed(2)}%`;
-        applyConditionalFormatting("ty-le-ban-kem", data.tyLeBanKem, [0.20]);
-
-        const tableBody = document.getElementById("table-body");
-        const checkboxContainer = document.getElementById("checkbox-container");
-        const defaultNganhHang = [
-          "NNH Điện thoại mới",
-          "Điện Thoại Di Động",
-          "Smartphone",
-          "Apple",
-          "Samsung",
-          "Xiaomi",
-          "Oppo",
-          "Vivo",
-          "NNH Laptop",
-          "NNH Tablet",
-          "NNH Phụ kiện",
-          "NNH Đồng hồ thời trang",
-          "NNH Wearable",
-          "NNH VAS",
-          "NNH Sim số"
-        ];
-
-        if (checkboxContainer) {
-          const colCount = 3;
-          const itemsPerCol = Math.ceil(data.danhSachNganhHang.length / colCount);
-          for (let i = 0; i < colCount; i++) {
-            const colDiv = document.createElement("div");
-            colDiv.classList.add("col-md-4");
-            for (let j = i * itemsPerCol; j < Math.min((i + 1) * itemsPerCol, data.danhSachNganhHang.length); j++) {
-              const nganh = data.danhSachNganhHang[j];
-              const checkboxId = `nganh-${j}`;
-              const formCheck = document.createElement("div");
-              formCheck.classList.add("form-check");
-              const checkbox = document.createElement("input");
-              checkbox.type = "checkbox";
-              checkbox.classList.add("form-check-input");
-              checkbox.id = checkboxId;
-              checkbox.value = nganh.name;
-              if (defaultNganhHang.includes(nganh.name)) {
-                checkbox.checked = true;
-              }
-              const label = document.createElement("label");
-              label.classList.add("form-check-label");
-              label.htmlFor = checkboxId;
-              label.textContent = nganh.name;
-              formCheck.appendChild(checkbox);
-              formCheck.appendChild(label);
-              colDiv.appendChild(formCheck);
-            }
-            checkboxContainer.appendChild(colDiv);
-          }
+    <script>
+        // Tạo options cho giờ
+        const hourSelect = document.getElementById('taskHour');
+        for (let i = 8; i <= 22; i++) {
+            const option = document.createElement('option');
+            option.value = i.toString().padStart(2, '0');
+            option.text = i.toString().padStart(2, '0');
+            hourSelect.appendChild(option);
         }
 
-        function updateTable() {
-          const selectedNames = Array.from(document.querySelectorAll('#checkbox-container input[type="checkbox"]:checked'))
-                                     .map(cb => cb.value);
-          tableBody.innerHTML = "";
-          if (selectedNames.length === 0) return;
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-          data.danhSachNganhHang.forEach(item => {
-            if (selectedNames.includes(item.name)) {
-              const row = document.createElement("tr");
-              let className = "";
-              switch (item.name) {
-                case "Apple":
-                  className = "apple";
-                  break;
-                case "Samsung":
-                  className = "samsung";
-                  break;
-                case "Xiaomi":
-                  className = "xiaomi";
-                  break;
-                case "Oppo":
-                  className = "oppo";
-                  break;
-                case "Vivo":
-                  className = "vivo";
-                  break;
-                default:
-                  break;
-              }
-              const cungKyValue = (item.hieuQuaCungKy * 100).toFixed(2);
-              let cungKyClass = "";
-              if (parseFloat(cungKyValue) < 0) {
-                cungKyClass = "negative-bold";
-              } else if (parseFloat(cungKyValue) > 0) {
-                cungKyClass = "positive-bold";
-              }
-              row.innerHTML = `
-                <td class="${className}">${item.name}</td>
-                <td>${formatNumber(item.soLuong)}</td>
-                <td>${formatNumber(item.doanhThuQuiDoi)}</td>
-                <td class="${cungKyClass}">${cungKyValue}%</td>
-                <td>${formatNumber(item.donGia)}</td>
-                <td>${formatNumber(item.laiGop)}</td>
-                <td>${formatNumber(item.dtTraGop)}</td>
-              `;
-              tableBody.appendChild(row);
-            }
-          });
-          document.getElementById("filter-section").style.display = "none";
-        }
+            const taskName = document.getElementById('taskName').value;
+            const taskType = document.getElementById('taskType').value;
+            const taskDate = document.getElementById('taskDate').value;
+            const taskHour = document.getElementById('taskHour').value;
+            const taskMinute = document.getElementById('taskMinute').value;
 
-        document.getElementById("select-all").addEventListener("click", function() {
-          document.querySelectorAll('#checkbox-container input[type="checkbox"]').forEach(cb => {
-            cb.checked = true;
-          });
+            const dateObj = new Date(`${taskDate}T${taskHour}:${taskMinute}`);
+            const formattedDate = dateObj.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const data = {
+                taskName: taskName,
+                taskType: taskType === 'urgent' ? 'Gấp' : 'Bình Thường',
+                taskDeadline: formattedDate
+            };
+
+            console.log('Sending data:', data);
+
+            fetch('https://script.google.com/macros/s/AKfycbxSK3j8YpA7LeXMepyTLDfnrlmt26KPL-yHHhG_lmoPnwNPhNhCju2Gbxtcccw8vpotkA/exec', {  // Thay bằng URL mới sau khi deploy
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(result => {
+                console.log('Server response:', result);
+                if (result.status === 'success') {
+                    const taskItem = document.createElement('div');
+                    taskItem.classList.add('task-item');
+                    taskItem.innerHTML = `
+                        <div class="task-info">
+                            <strong>${taskName}</strong>
+                            <span>Deadline: ${formattedDate}</span>
+                        </div>
+                        <span class="task-type ${taskType}">${taskType === 'urgent' ? 'Gấp' : 'Bình Thường'}</span>
+                    `;
+                    document.getElementById('taskList').appendChild(taskItem);
+                    this.reset();
+                } else {
+                    alert('Lỗi từ server: ' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('Lỗi kết nối: ' + error.message);
+            });
         });
-
-        document.getElementById("deselect-all").addEventListener("click", function() {
-          document.querySelectorAll('#checkbox-container input[type="checkbox"]').forEach(cb => {
-            cb.checked = false;
-          });
-        });
-
-        document.getElementById("apply-filter").addEventListener("click", updateTable);
-        updateTable();
-      })
-      .catch(error => console.error("Error fetching data:", error));
-
-    // Hàm chụp hình của phần tử và tải xuống
-    function captureElement(element, filename) {
-      html2canvas(element, {
-        scale: 2, // Tăng độ phân giải để ảnh rõ nét hơn trên điện thoại
-        useCORS: true, // Hỗ trợ tải tài nguyên từ bên ngoài
-        backgroundColor: '#f0f2f5' // Đảm bảo nền ảnh khớp với nền trang
-      }).then(canvas => {
-        var link = document.createElement("a");
-        link.download = filename;
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    }
-
-    // Thêm sự kiện cho nút "Chụp hình"
-    document.getElementById("capture-button").addEventListener("click", function() {
-      const captureButton = document.getElementById("capture-button");
-      const toggleFilterButton = document.getElementById("toggle-filter");
-
-      captureButton.style.display = "none";
-      toggleFilterButton.style.display = "none";
-
-      const content = document.querySelector(".content");
-
-      html2canvas(content, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#f0f2f5'
-      }).then(canvas => {
-        captureButton.style.display = "block";
-        toggleFilterButton.style.display = "block";
-
-        var link = document.createElement("a");
-        link.download = "anh-chup.png";
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    });
-
-    // Chụp toàn bộ báo cáo khi click tiêu đề "BÁO CÁO DOANH THU"
-    document.querySelector("h1").addEventListener("click", function() {
-      const content = document.querySelector(".content");
-      const tableSection = document.querySelector("#nganh-hang-table").parentElement;
-      const captureButton = document.getElementById("capture-button");
-      const toggleFilterButton = document.getElementById("toggle-filter");
-      const nganhHangTitle = document.getElementById("nganh-hang");
-
-      // Ẩn các phần tử không mong muốn
-      tableSection.style.display = "none";
-      captureButton.style.display = "none";
-      toggleFilterButton.style.display = "none";
-      nganhHangTitle.style.display = "none";
-
-      html2canvas(content, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#f0f2f5'
-      }).then(canvas => {
-        // Hiển thị lại các phần tử
-        tableSection.style.display = "block";
-        captureButton.style.display = "block";
-        toggleFilterButton.style.display = "block";
-        nganhHangTitle.style.display = "block";
-
-        var link = document.createElement("a");
-        link.download = "bao-cao-doanh-thu.png";
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    });
-
-    // Chụp bảng ngành hàng khi click tiêu đề "Bảng Ngành Hàng"
-    document.querySelector("#nganh-hang").addEventListener("click", function(e) {
-      if (e.target.id !== "toggle-filter") {
-        const table = document.querySelector("#nganh-hang-table");
-        captureElement(table, "bang-nganh-hang.png");
-      }
-    });
-
-    // Chụp từng card khi click vào card
-    document.querySelectorAll(".card").forEach(card => {
-      card.addEventListener("click", function() {
-        const title = this.querySelector(".card-title").textContent.trim().replace(/\s+/g, "-").toLowerCase();
-        captureElement(this, `card-${title}.png`);
-      });
-    });
-
-    // Xử lý sự kiện ẩn/hiện Sidebar
-    document.getElementById('toggle-sidebar').addEventListener('click', function() {
-      const container = document.body;
-      container.classList.toggle('sidebar-hidden');
-      const icon = this.querySelector('i');
-      icon.classList.toggle('fa-bars');
-      icon.classList.toggle('fa-times');
-    });
-  </script>
+    </script>
 </body>
 </html>
