@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Bảo Hành Theo Nhóm</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .product-list {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            min-height: 100px;
+            overflow: auto;
+        }
+        .product-list label {
+            display: block;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .warranty-info {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            min-Hello World! height: 200px;
+        }
+        .warranty-info h2 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .warranty-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .warranty-info p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .warranty-info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .print-button, .preview-button {
+            display: inline-block;
+            margin: 10px 5px;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .print-button {
+            background-color: #007bff;
+        }
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+        .preview-button {
+            background-color: #28a745;
+        }
+        .preview-button:hover {
+            background-color: #218838;
+        }
+        .print-button:disabled, .preview-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .pdf-preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pdf-preview iframe {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+            .product-list {
+                flex: 1;
+                min-width: 200px;
+            }
+            .warranty-info {
+                flex: 2;
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Danh Sách Sản Phẩm Bảo Hành</h1>
+    <div class="container">
+        <div class="product-list">
+            <h2>Chọn Sản Phẩm</h2>
+            <!-- Danh sách checkbox sẽ được tạo động bằng JavaScript -->
+        </div>
+        <div class="warranty-info" id="warrantyInfo">
+            <h2>Thông Tin Bảo Hành</h2>
+            <button class="preview-button" id="previewBtn" disabled>Xem trước PDF</button>
+            <button class="print-button" id="printBtn" disabled>In</button>
+            <p>Vui lòng chọn sản phẩm để xem thông tin bảo hành theo nhóm.</p>
+            <div class="pdf-preview" id="pdfPreview"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Dữ liệu sản phẩm từ sheet "Nhom BH" (bao gồm nhóm)
+        const products = [
+            { name: "Điện thoại", group: "Sản phẩm chính", policies: [1, 2, 3] },
+            { name: "Laptop", group: "Sản phẩm chính", policies: [1, 2, 3] },
+            { name: "Màn hình máy tính", group: "Sản phẩm chính", policies: [1, 2, 3] },
+            { name: "Máy tính bảng", group: "Sản phẩm chính", policies: [1, 2, 3] },
+            { name: "Máy tính để bàn", group: "Sản phẩm chính", policies: [1, 2, 3] },
+            { name: "Đồng hồ thời trang", group: "Đồng hồ", policies: [4] },
+            { name: "Adapter sạc", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Android TV Box", group: "Phụ Kiện", policies: [1, 3] },
+            { name: "Bàn phím", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Bút cảm ứng thông minh", group: "Phụ Kiện", policies: [1, 3] },
+            { name: "Bút trình chiếu", group: "Phụ Kiện", policies: [1, 3] },
+            { name: "Cảm biến áp suất lốp", group: "Phụ Kiện", policies: [1, 3] },
+            { name: "Camera giám sát, hành trình", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Cáp HDMI, cáp tivi", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Cáp sạc", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Chuột máy tính", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Đồng hồ thông minh", group: "Đồng hồ thông minh", policies: [1, 3] },
+            { name: "Loa", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Máy tính cầm tay", group: "Phụ Kiện", policies: [1, 3] },
+            { name: "Ổ cứng", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Pin sạc dự phòng", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Phụ kiện iPad", group: "Phụ Kiện", policies: [1, 7] },
+            { name: "Sạc, cáp", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Tai nghe", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Thẻ nhớ", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Thiết bị định vị ô tô", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Thiết bị mạng", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Thiết bị nhà thông minh", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "USB", group: "Phụ Kiện", policies: [1, 8] },
+            { name: "Miếng dán", group: "Phụ Kiện", policies: [5] },
+            { name: "Đã sử dụng/Trưng bày", group: "Phụ Kiện", policies: [6] },
+            { name: "PK Apple", group: "Phụ Kiện Apple", policies: [7] }
+        ];
+
+        // Dữ liệu chính sách bảo hành
+        const policies = {
+            1: {
+                name: "✾ BẢO HÀNH CÓ CAM KẾT",
+                content: [
+                    "‣ Chế độ dành cho sản phẩm chính, không áp dụng cho phụ kiện đi kèm.",
+                    "‣ Bảo hành trong 15 ngày (tính từ ngày nhận máy lỗi đến ngày trả máy).",
+                    "‣ Không bảo hành lại lần 2 trong 30 ngày kể từ ngày bảo hành xong.",
+                    "‣ Nếu vi phạm cam kết (quá 15 ngày hoặc phải bảo hành lại sản phẩm lần nữa trong 30 ngày), khách hàng được áp dụng 'Hư gì đổi nấy' hoặc 'Hoàn tiền' với mức phí giảm 50%.",
+                    "‣ Từ tháng thứ 13, chế độ áp dụng bảo hành hãng (nếu có)."
+                ],
+                conditions: "‣ Sản phẩm đủ điều kiện bảo hành của hãng."
+            },
+            2: {
+                name: "✾ CHÍNH SÁCH ĐỔI TRẢ",
+                content: [
+                    "‣ Đổi sản phẩm chính cùng model, màu sắc:",
+                    "- Tháng đầu lỗi kỹ thuật(có xác nhận của hãng): được đổi miễn phí.",
+                    "- Tháng 2-12: phí 10% giá trị hóa đơn (VD: tháng 3 phí 20%).",
+                    "‣ Đổi phụ kiện đi kèm miễn phí trong 12 tháng bằng phụ kiện tương đương.",
+                    "‣ Lỗi phần mềm chỉ khắc phục, không đổi.",
+                    "‣ Nếu không có sản phẩm đổi, áp dụng 'Bảo hành có cam kết' hoặc 'Hoàn tiền' với mức phí giảm 50%."
+                ],
+                conditions: "‣ Sản phẩm không trầy xước, giữ nguyên hình dạng ban đầu, đủ điều kiện bảo hành hãng."
+            },
+            3: {
+                name: "✾ HOÀN TIỀN",
+                content: [
+                    "‣ Tháng đầu: phí 20% giá trị hóa đơn.",
+                    "‣ Tháng 2-12: phí 10% giá trị hóa đơn/tháng.",
+                    "‣ Hoàn trả đầy đủ hộp, phụ kiện:",
+                    "- Mất hộp: phí 2% giá trị hóa đơn.",
+                    "- Mất phụ kiện: tối đa 5% giá trị hóa đơn.",
+                    "‣ Hoàn trả toàn bộ hàng khuyến mãi, nếu mất thu phí theo giá công bố."
+                ],
+                conditions: "‣ Sản phẩm không trầy xước, giữ nguyên hình dạng ban đầu, đủ điều kiện bảo hành hãng."
+            },
+            4: {
+                name: "✾ ĐỒNG HỒ",
+                content: [
+                    "‣ Hãng ELIO, EYKI, SKMEI, SMILE KID: đổi 1:1 trong 6 tháng nếu lỗi kỹ thuật.",
+                    "‣ Hãng khác: bảo hành 12 tháng (chỉ bảo hành bộ máy, không bảo hành dây/vỏ).",
+                    "- Tháng đầu: đổi lỗi miễn phí.",
+                    "‣ Không áp dụng hoàn tiền.",
+                    "‣ Thay pin miễn phí trọn đời cho đồng hồ Quartz."
+                ],
+                conditions: "‣ Sản phẩm không trầy xước, cấn móp, giữ nguyên hình dạng ban đầu."
+            },
+            5: {
+                name: "✾ MIẾNG DÁN",
+                content: [
+                    "‣ Miếng dán trước/sau: lần đầu nguyên giá, từ lần thứ 2 giá 50%.",
+                    "‣ Miếng dán kính: dán lại miễn phí trong 30 ngày nếu lỗi bong tróc keo hoặc lỗi cảm ứng."
+                ],
+                conditions: ""
+            },
+            6: {
+                name: "✾ ĐÃ SỬ DỤNG/TRƯNG BÀY",
+                content: [
+                    "‣ Tháng đầu: bảo hành hoặc hoàn tiền với phí 10% giá trị hóa đơn.",
+                    "‣ Từ tháng thứ 2: không đổi trả, chỉ bảo hành hãng nếu còn thời gian và đủ điều kiện.",
+                    "‣ Hoàn trả đầy đủ phụ kiện, mất phụ kiện thu phí tối đa 5% giá trị hóa đơn."
+                ],
+                conditions: "‣ Sản phẩm lỗi NSX xác nhận từ hãng, không trầy xước, giữ nguyên hình dạng ban đầu, dùng cho mục đích cá nhân."
+            },
+            7: {
+                name: "✾ PHỤ KIỆN APPLE",
+                content: [
+                    "‣ Tháng đầu: đổi mới miễn phí nếu lỗi.",
+                    "‣ Tháng 2-12: gửi bảo hành tại trung tâm hãng."
+                ],
+                conditions: "‣ Sản phẩm không trầy xước, giữ nguyên hình dạng ban đầu, đủ điều kiện bảo hành hãng."
+            },
+            8: {
+                name: "✾ PHỤ KIỆN",
+                content: [
+                    "‣ Bảo hành 1 đổi 1 lỗi kỹ thuật phụ kiện",
+                    ""
+                ],
+                conditions: "‣ Sản phẩm không đứt/gãy,cấn móp"
+            }
+        };
+
+        // Xử lý khi DOM tải xong
+        document.addEventListener('DOMContentLoaded', () => {
+            const productList = document.querySelector('.product-list');
+            const warrantyInfo = document.getElementById('warrantyInfo');
+            const printButton = document.getElementById('printBtn');
+            const previewButton = document.getElementById('previewBtn');
+
+            // Kiểm tra phần tử productList
+            if (!productList) {
+                console.error('Không tìm thấy phần tử .product-list');
+                return;
+            }
+
+            // Kiểm tra mảng products
+            console.log('Products:', products);
+            if (!products || products.length === 0) {
+                console.error('Mảng products rỗng hoặc không hợp lệ');
+                productList.innerHTML = '<p>Không có sản phẩm nào để hiển thị.</p>';
+                return;
+            }
+
+            // Tạo danh sách checkbox động
+            products.forEach(product => {
+                if (!product.name || !product.group) {
+                    console.warn('Sản phẩm không hợp lệ:', product);
+                    return;
+                }
+                console.log('Tạo checkbox cho:', product.name);
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" value="${product.name}" data-group="${product.group}"> ${product.name}`;
+                productList.appendChild(label);
+            });
+
+            // Xử lý sự kiện khi checkbox thay đổi
+            let groupPolicies = {}; // Lưu trữ groupPolicies để dùng cho in và preview
+
+            productList.addEventListener('change', () => {
+                const selectedProducts = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(input => ({
+                    name: input.value,
+                    group: input.getAttribute('data-group')
+                }));
+
+                if (selectedProducts.length === 0) {
+                    warrantyInfo.innerHTML = `
+                        <h2>Thông Tin Bảo Hành</h2>
+                        <button class="preview-button" id="previewBtn" disabled>Xem trước PDF</button>
+                        <button class="print-button" id="printBtn" disabled>In</button>
+                        <p>Vui lòng chọn sản phẩm để xem thông tin bảo hành theo nhóm.</p>
+                        <div class="pdf-preview" id="pdfPreview"></div>
+                    `;
+                    printButton.disabled = true;
+                    previewButton.disabled = true;
+                    return;
+                }
+
+                // Nhóm các sản phẩm theo group và lấy chính sách bảo hành
+                groupPolicies = {};
+                selectedProducts.forEach(selected => {
+                    const product = products.find(p => p.name === selected.name);
+                    if (product) {
+                        if (!groupPolicies[product.group]) {
+                            groupPolicies[product.group] = new Set(product.policies);
+                        } else {
+                            product.policies.forEach(policy => groupPolicies[product.group].add(policy));
+                        }
+                    }
+                });
+
+                console.log('groupPolicies trước khi hiển thị:', groupPolicies);
+
+                // Hiển thị thông tin bảo hành theo nhóm
+                let output = `
+                    <h2>Thông Tin Bảo Hành</h2>
+                    <button class="preview-button" id="previewBtn">Xem trước PDF</button>
+                    <button class="print-button" id="printBtn">In</button>
+                `;
+                Object.keys(groupPolicies).forEach(group => {
+                    output += `<h3>Nhóm: ${group}</h3>`;
+                    const policyIds = Array.from(groupPolicies[group]);
+                    policyIds.sort((a, b) => a - b);
+                    policyIds.forEach(policyId => {
+                        const policy = policies[policyId];
+                        if (policy) {
+                            output += `
+                                <h4>${policy.name}</h4>
+                                <p><strong>Nội dung:</strong><br>${policy.content.join('<br>')}</p>
+                                ${policy.conditions ? `<p><strong>Điều kiện áp dụng:</strong><br>${policy.conditions}</p>` : ''}
+                            `;
+                        }
+                    });
+                });
+                output += `<div class="pdf-preview" id="pdfPreview"></div>`;
+
+                warrantyInfo.innerHTML = output;
+                printButton.disabled = false;
+                previewButton.disabled = false;
+
+                // Thêm sự kiện cho nút Xem trước PDF
+                document.getElementById('previewBtn').addEventListener('click', () => {
+                    const { jsPDF } = window.jspdf;
+                    if (!jsPDF) {
+                        console.error('jsPDF không được tải');
+                        alert('Lỗi: Không thể tải thư viện jsPDF.');
+                        return;
+                    }
+
+                    const doc = new jsPDF({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: [80, 529]
+                    });
+
+                    doc.setFont('helvetica', 'normal');
+
+                    let y = 10;
+                    const pageHeight = 529;
+                    const marginBottom = 20;
+
+                    function checkPage(yPos) {
+                        if (yPos > pageHeight - marginBottom) {
+                            doc.addPage([80, pageHeight]);
+                            return 10;
+                        }
+                        return yPos;
+                    }
+
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('THÔNG TIN BẢO HÀNH', 40, y, { align: 'center' });
+                    y += 10;
+
+                    Object.keys(groupPolicies).forEach(group => {
+                        y = checkPage(y);
+                        doc.setFontSize(10);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(`Nhóm: ${group}`, 5, y);
+                        y += 6;
+
+                        const policyIds = Array.from(groupPolicies[group] || []);
+                        policyIds.sort((a, b) => a - b);
+                        policyIds.forEach(policyId => {
+                            const policy = policies[policyId];
+                            if (policy) {
+                                y = checkPage(y);
+                                doc.setFont('helvetica', 'bold');
+                                doc.text(policy.name, 5, y);
+                                y += 5;
+
+                                doc.setFont('helvetica', 'normal');
+                                doc.setFontSize(8);
+                                policy.content.forEach(line => {
+                                    const lines = doc.splitTextToSize(line, 70);
+                                    lines.forEach(line => {
+                                        y = checkPage(y);
+                                        doc.text(line, 5, y);
+                                        y += 5;
+                                    });
+                                });
+
+                                if (policy.conditions) {
+                                    y = checkPage(y);
+                                    doc.setFont('helvetica', 'bold');
+                                    doc.text('Điều kiện áp dụng:', 5, y);
+                                    y += 5;
+                                    doc.setFont('helvetica', 'normal');
+                                    const condLines = doc.splitTextToSize(policy.conditions, 70);
+                                    condLines.forEach(line => {
+                                        y = checkPage(y);
+                                        doc.text(line, 5, y);
+                                        y += 5;
+                                    });
+                                }
+                                y += 5;
+                            }
+                        });
+                    });
+
+                    const pdfDataUri = doc.output('datauristring');
+                    const pdfPreview = document.getElementById('pdfPreview');
+                    pdfPreview.innerHTML = `<iframe src="${pdfDataUri}" title="PDF Preview"></iframe>`;
+                });
+
+                // Thêm sự kiện cho nút In
+                document.getElementById('printBtn').addEventListener('click', async () => {
+                    const serializedGroupPolicies = {};
+                    Object.keys(groupPolicies).forEach(group => {
+                        serializedGroupPolicies[group] = Array.from(groupPolicies[group]);
+                    });
+
+                    const printData = {
+                        groupPolicies: serializedGroupPolicies,
+                        policies: policies
+                    };
+
+                    console.log('Dữ liệu gửi đi in:', printData);
+
+                    try {
+                        const response = await fetch('http://192.168.137.1:3000/print-warranty', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(printData)
+                        });
+                        const result = await response.text();
+                        alert(result);
+                    } catch (error) {
+                        alert('Lỗi gửi lệnh in: ' + error.message);
+                        console.error(error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

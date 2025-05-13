@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông Tin Gói Cước</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e0e7ff, #c3dafe);
+      margin: 0;
+      padding: 10px;
+      color: #1e3a8a;
+    }
+    #controls {
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 15px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    #controls label {
+      margin-right: 15px;
+      font-weight: 500;
+      color: #1e3a8a;
+      font-size: 14px;
+    }
+    #controls select {
+      padding: 6px;
+      border: 1px solid #93c5fd;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 100%;
+      max-width: 100%;
+      margin-top: 8px;
+      background: #f8fafc;
+      transition: border-color 0.3s;
+    }
+    #controls select:focus {
+      border-color: #3b82f6;
+      outline: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 15px;
+      table-layout: fixed;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      word-wrap: break-word;
+      white-space: normal;
+      font-size: 12px;
+    }
+    th {
+      background: #3b82f6;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    tr:hover {
+      background: #f1f5f9;
+      transition: background 0.2s;
+    }
+    .homepayter {
+      display: none;
+    }
+    #homepayterTable {
+      margin-top: 15px;
+      display: none;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      table-layout: fixed;
+    }
+    #warning {
+      color: #dc2626;
+      font-style: italic;
+      margin: 8px 0;
+      display: none;
+      font-size: 12px;
+    }
+    input[type="radio"] {
+      accent-color: #3b82f6;
+    }
+    #printButton {
+      display: none;
+      padding: 8px 16px;
+      background: #3b82f6;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    #printButton:hover {
+      background: #2563eb;
+    }
+    th:nth-child(1), td:nth-child(1) { width: 10%; }
+    th:nth-child(2), td:nth-child(2) { width: 15%; }
+    th:nth-child(3), td:nth-child(3) { width: 15%; }
+    th:nth-child(4), td:nth-child(4) { width: 25%; }
+    th:nth-child(5), td:nth-child(5) { width: 10%; }
+    th:nth-child(6), td:nth-child(6) { width: 10%; }
+    th:nth-child(7), td:nth-child(7) { width: 15%; }
+    th:nth-child(n+8), td:nth-child(n+8) { width: 10%; }
+    #homepayterTable th:nth-child(1), #homepayterTable td:nth-child(1) { width: 33.33%; }
+    #homepayterTable th:nth-child(2), #homepayterTable td:nth-child(2) { width: 33.33%; }
+    #homepayterTable th:nth-child(3), #homepayterTable td:nth-child(3) { width: 33.33%; }
+    @media (max-width: 768px) {
+      body { padding: 5px; }
+      #controls { padding: 8px; }
+      #controls select { font-size: 12px; }
+      th, td { font-size: 10px; padding: 6px; }
+      #warning { font-size: 10px; }
+      #printButton { font-size: 12px; padding: 6px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <label><input type="radio" name="viewMode" value="provider" checked> Xem theo Nhà Mạng</label>
+    <label><input type="radio" name="viewMode" value="duration"> Xem theo Thời Hạn</label>
+    <div id="providerSelect" style="display: block;">
+      <label for="providerDropdown">Chọn Nhà Mạng:</label>
+      <select id="providerDropdown">
+        <option value="">-- Chọn Nhà Mạng --</option>
+      </select>
+    </div>
+    <div id="durationSelect" style="display: none;">
+      <label for="durationDropdown">Chọn Thời Hạn:</label>
+      <select id="durationDropdown">
+        <option value="">-- Chọn Thời Hạn --</option>
+      </select>
+    </div>
+  </div>
+  <table id="plansTable">
+    <thead>
+      <tr>
+        <th>Hiển thị HomePayter</th>
+        <th>Nhà Mạng</th>
+        <th>Gói Cước</th>
+        <th>Nội Dung Khuyến Mại</th>
+        <th>Giá Bán</th>
+        <th>Thời Hạn</th>
+        <th>Gia Hạn</th>
+        <th class="homepayter">HomePayter 1 Tháng</th>
+        <th class="homepayter">HomePayter 3 Tháng</th>
+        <th class="homepayter">HomePayter 6 Tháng</th>
+        <th class="homepayter">HomePayter 9 Tháng</th>
+        <th class="homepayter">HomePayter 12 Tháng</th>
+        <th class="homepayter">Chênh lệch 1 Tháng</th>
+        <th class="homepayter">Chênh lệch 3 Tháng</th>
+        <th class="homepayter">Chênh lệch 6 Tháng</th>
+        <th class="homepayter">Chênh lệch 9 Tháng</th>
+        <th class="homepayter">Chênh lệch 12 Tháng</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button id="printButton">In Thông Tin</button>
+  <p id="warning">Lưu ý: Chênh lệch có thể thay đổi tùy thuộc vào HomePayter của mỗi khách hàng.</p>
+  <table id="homepayterTable">
+    <thead>
+      <tr>
+        <th>Thời Gian</th>
+        <th>HomePayter Hàng Tháng</th>
+        <th>Chênh lệch HomePayter</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1 Tháng</td><td id="hp1Month"></td><td id="diff1Month"></td></tr>
+      <tr><td>3 Tháng</td><td id="hp3Months"></td><td id="diff3Months"></td></tr>
+      <tr><td>6 Tháng</td><td id="hp6Months"></td><td id="diff6Months"></td></tr>
+      <tr><td>9 Tháng</td><td id="hp9Months"></td><td id="diff9Months"></td></tr>
+      <tr><td>12 Tháng</td><td id="hp12Months"></td><td id="diff12Months"></td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzX7UeBDFcYCoylX0vR55v_U6KHKTyC78xT6dsMLsqPIWdO-NYzwOyZsWaT7hHmKErMaw/exec';
+    let selectedPlan = null;
+
+    function formatNumber(value) {
+      if (value === null || value === undefined || value === '') return '';
+      const num = parseFloat(value);
+      if (isNaN(num)) return value;
+      return num.toLocaleString('vi-VN', { maximumFractionDigits: 0 }).replace(/,/g, '.');
+    }
+
+    fetch(scriptUrl)
+      .then(response => response.json())
+      .then(plans => {
+        const filteredPlans = plans.filter(plan => plan.plan.trim() !== '');
+        filteredPlans.forEach(plan => {
+          plan.price = formatNumber(plan.price);
+          plan.renewal = formatNumber(plan.renewal);
+          plan.homepayter1Month = formatNumber(plan.homepayter1Month);
+          plan.homepayter3Months = formatNumber(plan.homepayter3Months);
+          plan.homepayter6Months = formatNumber(plan.homepayter6Months);
+          plan.homepayter9Months = formatNumber(plan.homepayter9Months);
+          plan.homepayter12Months = formatNumber(plan.homepayter12Months);
+          plan.diff1Month = formatNumber(plan.diff1Month);
+          plan.diff3Months = formatNumber(plan.diff3Months);
+          plan.diff6Months = formatNumber(plan.diff6Months);
+          plan.diff9Months = formatNumber(plan.diff9Months);
+          plan.diff12Months = formatNumber(plan.diff12Months);
+        });
+
+        const providers = [...new Set(filteredPlans.map(plan => plan.provider))];
+        const durations = [...new Set(filteredPlans.map(plan => plan.duration))];
+
+        const providerDropdown = document.getElementById('providerDropdown');
+        providers.forEach(provider => {
+          const option = document.createElement('option');
+          option.value = provider;
+          option.textContent = provider;
+          providerDropdown.appendChild(option);
+        });
+
+        const durationDropdown = document.getElementById('durationDropdown');
+        durations.forEach(duration => {
+          const option = document.createElement('option');
+          option.value = duration;
+          option.textContent = duration;
+          durationDropdown.appendChild(option);
+        });
+
+        document.querySelectorAll('input[name="viewMode"]').forEach(radio => {
+          radio.addEventListener('change', () => {
+            const tbody = document.getElementById('plansTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            document.getElementById('homepayterTable').style.display = 'none';
+            document.getElementById('warning').style.display = 'none';
+            document.getElementById('printButton').style.display = 'none';
+            if (radio.value === 'provider') {
+              document.getElementById('providerSelect').style.display = 'block';
+              document.getElementById('durationSelect').style.display = 'none';
+            } else {
+              document.getElementById('providerSelect').style.display = 'none';
+              document.getElementById('durationSelect').style.display = 'block';
+            }
+          });
+        });
+
+        providerDropdown.addEventListener('change', () => {
+          const selectedProvider = providerDropdown.value;
+          const tbody = document.getElementById('plansTable').querySelector('tbody');
+          tbody.innerHTML = '';
+          document.getElementById('homepayterTable').style.display = 'none';
+          document.getElementById('warning').style.display = 'none';
+          document.getElementById('printButton').style.display = 'none';
+          if (selectedProvider) {
+            const plansToDisplay = filteredPlans.filter(plan => plan.provider === selectedProvider);
+            displayPlans(plansToDisplay);
+          }
+        });
+
+        durationDropdown.addEventListener('change', () => {
+          const selectedDuration = durationDropdown.value;
+          const tbody = document.getElementById('plansTable').querySelector('tbody');
+          tbody.innerHTML = '';
+          document.getElementById('homepayterTable').style.display = 'none';
+          document.getElementById('warning').style.display = 'none';
+          document.getElementById('printButton').style.display = 'none';
+          if (selectedDuration) {
+            const plansToDisplay = filteredPlans.filter(plan => plan.duration === selectedDuration);
+            displayPlans(plansToDisplay);
+          }
+        });
+
+        function displayPlans(plansToDisplay) {
+          const tbody = document.getElementById('plansTable').querySelector('tbody');
+          tbody.innerHTML = '';
+          plansToDisplay.forEach((plan, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td><input type="radio" name="homepayterRadio" value="${index}"></td>
+              <td>${plan.provider}</td>
+              <td>${plan.plan}</td>
+              <td>${plan.promotion}</td>
+              <td>${plan.price}</td>
+              <td>${plan.duration}</td>
+              <td>${plan.renewal}</td>
+              <td class="homepayter homepayter-${index}">${plan.homepayter1Month}</td>
+              <td class="homepayter homepayter-${index}">${plan.homepayter3Months}</td>
+              <td class="homepayter homepayter-${index}">${plan.homepayter6Months}</td>
+              <td class="homepayter homepayter-${index}">${plan.homepayter9Months}</td>
+              <td class="homepayter homepayter-${index}">${plan.homepayter12Months}</td>
+              <td class="homepayter homepayter-${index}">${plan.diff1Month}</td>
+              <td class="homepayter homepayter-${index}">${plan.diff3Months}</td>
+              <td class="homepayter homepayter-${index}">${plan.diff6Months}</td>
+              <td class="homepayter homepayter-${index}">${plan.diff9Months}</td>
+              <td class="homepayter homepayter-${index}">${plan.diff12Months}</td>
+            `;
+            tbody.appendChild(row);
+          });
+
+          document.querySelectorAll('input[name="homepayterRadio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+              const selectedIndex = radio.value;
+              toggleHomepayter(plansToDisplay, selectedIndex);
+            });
+          });
+        }
+
+        function toggleHomepayter(plans, selectedIndex) {
+          const rows = document.querySelectorAll('#plansTable tbody tr');
+          rows.forEach((row, index) => {
+            const homepayterCells = row.querySelectorAll(`.homepayter-${index}`);
+            if (index == selectedIndex) {
+              homepayterCells.forEach(cell => cell.style.display = '');
+            } else {
+              homepayterCells.forEach(cell => cell.style.display = 'none');
+            }
+          });
+
+          selectedPlan = plans[selectedIndex];
+          if (selectedPlan) {
+            document.getElementById('hp1Month').textContent = selectedPlan.homepayter1Month;
+            document.getElementById('hp3Months').textContent = selectedPlan.homepayter3Months;
+            document.getElementById('hp6Months').textContent = selectedPlan.homepayter6Months;
+            document.getElementById('hp9Months').textContent = selectedPlan.homepayter9Months;
+            document.getElementById('hp12Months').textContent = selectedPlan.homepayter12Months;
+            document.getElementById('diff1Month').textContent = selectedPlan.diff1Month;
+            document.getElementById('diff3Months').textContent = selectedPlan.diff3Months;
+            document.getElementById('diff6Months').textContent = selectedPlan.diff6Months;
+            document.getElementById('diff9Months').textContent = selectedPlan.diff9Months;
+            document.getElementById('diff12Months').textContent = selectedPlan.diff12Months;
+            document.getElementById('homepayterTable').style.display = 'table';
+            document.getElementById('warning').style.display = 'block';
+            document.getElementById('printButton').style.display = 'block';
+          } else {
+            document.getElementById('homepayterTable').style.display = 'none';
+            document.getElementById('warning').style.display = 'none';
+            document.getElementById('printButton').style.display = 'none';
+          }
+        }
+      })
+      .catch(error => console.error('Lỗi khi tải dữ liệu:', error));
+
+    // Xử lý sự kiện nhấn nút in
+    document.getElementById('printButton').addEventListener('click', () => {
+      if (selectedPlan) {
+        fetch('/print-sim', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(selectedPlan)
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Lỗi khi gửi lệnh in đến server');
+          }
+          return response.text();
+        })
+        .then(message => {
+          console.log(message);
+          alert('Đã gửi lệnh in đến server thành công');
+        })
+        .catch(error => {
+          console.error('Lỗi:', error);
+          alert('Có lỗi xảy ra khi gửi lệnh in');
+        });
+      } else {
+        alert('Vui lòng chọn một gói cước trước khi in!');
+      }
+    });
+  </script>
+</body>
+</html>

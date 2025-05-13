@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Ca Làm Việc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            margin: 0;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: #34495e;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+            outline: none;
+        }
+        button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            animation: pulse 0.5s infinite;
+        }
+        .tab {
+            margin-top: 40px;
+            display: none;
+        }
+        #result {
+            margin-top: 30px;
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: #2c3e50;
+            white-space: pre-wrap;
+        }
+        .button-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group label {
+            margin: 0;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Điền Mục Tiêu Ngày</h2>
+        <form id="targetForm">
+            <div class="form-group">
+                <label>Doanh Thu (triệu):</label>
+                <input type="number" id="doanhThu" name="doanhThu" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Sim:</label>
+                <input type="text" id="sim" name="sim">
+            </div>
+            <div class="form-group">
+                <label>VAS:</label>
+                <input type="text" id="vieon" name="vieon">
+            </div>
+            <div class="form-group">
+                <label>Sạc Dự Phòng:</label>
+                <input type="text" id="sdp" name="sdp">
+            </div>
+			  <div class="form-group">
+                <label>Camera:</label>
+                <input type="text" id="Cam" name="Cam">
+            </div>
+            <div class="form-group">
+                <label>Phụ Kiện + Đồng Hồ:</label>
+                <input type="number" id="pkdh" name="pkdh" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Home Paylater:</label>
+                <input type="text" id="homePaylater" name="homePaylater">
+            </div>
+            <div class="form-group">
+                <label>Bảo Hiểm:</label>
+                <input type="text" id="baoHiem" name="baoHiem">
+            </div>
+            <div class="form-group">
+                <label>Tên phiên:</label>
+                <input type="text" id="sessionName" placeholder="Tự động theo ngày giờ">
+            </div>
+            <div class="button-group">
+                <button type="button" onclick="saveTargets()">Lưu Mục Tiêu</button>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showResultForm" onchange="toggleResultForm()">
+                    <label for="showResultForm">Báo Cáo</label>
+                </div>
+            </div>
+        </form>
+
+        <div class="tab" id="resultTab">
+            <h2>Báo Cáo Kết Quả</h2>
+            <div class="form-group">
+                <label>Chọn phiên để báo cáo:</label>
+                <select id="savedSessions" onchange="loadSession()">
+                    <option value="">-- Chọn phiên --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Doanh Thu (triệu):</label>
+                <input type="number" id="resultDoanhThu" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Sim:</label>
+                <input type="text" id="resultSim">
+            </div>
+            <div class="form-group">
+                <label>VAS:</label>
+                <input type="text" id="resultVieon">
+            </div>
+            <div class="form-group">
+                <label>Sạc Dự Phòng:</label>
+                <input type="text" id="resultSdp">
+            </div>
+			<div class="form-group">
+                <label>Camera:</label>
+                <input type="text" id="resultCam">
+            </div>
+            <div class="form-group">
+                <label>Phụ Kiện + Đồng Hồ (triệu):</label>
+                <input type="number" id="resultPkdh" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Home Paylater:</label>
+                <input type="text" id="resultHomePaylater">
+            </div>
+            <div class="form-group">
+                <label>Bảo Hiểm:</label>
+                <input type="text" id="resultBaoHiem">
+            </div>
+            <div class="button-group">
+                <button type="button" onclick="generateResult()">Tạo Báo Cáo Kết Quả</button>
+            </div>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let sessions = JSON.parse(localStorage.getItem('sessions')) || {};
+
+        function generateSessionName() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        window.onload = function() {
+            document.getElementById('sessionName').value = generateSessionName();
+            updateSessionDropdown();
+        };
+
+        function saveTargets() {
+            const sessionName = document.getElementById('sessionName').value.trim();
+            if (!sessionName) {
+                alert('Vui lòng nhập tên phiên!');
+                return;
+            }
+
+            const dateMatch = sessionName.match(/(\d{2}\/\d{2})/);
+            if (!dateMatch) {
+                alert('Tên phiên phải chứa ngày tháng (DD/MM)!');
+                return;
+            }
+            const dateKey = dateMatch[0];
+
+            const targets = {
+                sessionName: sessionName,
+                doanhThu: document.getElementById('doanhThu').value,
+                sim: document.getElementById('sim').value,
+                vieon: document.getElementById('vieon').value,
+				Cam: document.getElementById('Cam').value,
+                sdp: document.getElementById('sdp').value,
+                pkdh: document.getElementById('pkdh').value,
+                homePaylater: document.getElementById('homePaylater').value,
+                baoHiem: document.getElementById('baoHiem').value
+            };
+
+            sessions[dateKey] = targets;
+
+            const dates = Object.keys(sessions);
+            if (dates.length > 7) {
+                const oldestDate = dates[0];
+                delete sessions[oldestDate];
+            }
+
+            localStorage.setItem('sessions', JSON.stringify(sessions));
+
+            const report = `🔥MỤC TIÊU NGÀY ${dateKey}🔥
+🔸Doanh Thu: ${targets.doanhThu ? targets.doanhThu + ' triệu' : ''}
+🔸Sim: ${targets.sim}
+🔸Vas: ${targets.vieon}
+🔸SDP: ${targets.sdp}
+🔸Camera: ${targets.Cam}
+🔸PK + ĐH: ${targets.pkdh ? targets.pkdh + ' triệu' : ''}
+🔸Home Paylater: ${targets.homePaylater}
+🔸Bảo Hiểm: ${targets.baoHiem}
+---------------------------
+🏁KẾT QUẢ🏁 
+🔹Doanh Thu: 
+🔹Sim: 
+🔹Vas: 
+🔹SDP: 
+🔹Camera: 
+🔹PK + ĐH: 
+🔹Home Paylater: 
+🔹Bảo Hiểm: `;
+
+            document.getElementById('result').innerHTML = `<pre>${report}</pre>`;
+            navigator.clipboard.writeText(report)
+                .then(() => alert('Đã copy báo cáo vào clipboard!'))
+                .catch(err => console.error('Lỗi khi copy: ', err));
+            updateSessionDropdown();
+        }
+
+        function updateSessionDropdown() {
+            const select = document.getElementById('savedSessions');
+            select.innerHTML = '<option value="">-- Chọn phiên --</option>';
+            for (let dateKey in sessions) {
+                const option = document.createElement('option');
+                option.value = dateKey;
+                option.textContent = sessions[dateKey].sessionName;
+                select.appendChild(option);
+            }
+        }
+
+        function loadSession() {
+            const dateKey = document.getElementById('savedSessions').value;
+            if (!dateKey) return;
+
+            const targets = sessions[dateKey];
+            document.getElementById('doanhThu').value = targets.doanhThu;
+            document.getElementById('sim').value = targets.sim;
+            document.getElementById('vieon').value = targets.vieon;
+			document.getElementById('Cam').value = targets.Cam;
+            document.getElementById('sdp').value = targets.sdp;
+            document.getElementById('pkdh').value = targets.pkdh;
+            document.getElementById('homePaylater').value = targets.homePaylater;
+            document.getElementById('baoHiem').value = targets.baoHiem;
+            document.getElementById('sessionName').value = targets.sessionName;
+        }
+
+        function generateResult() {
+            const dateKey = document.getElementById('savedSessions').value;
+            if (!dateKey) {
+                alert('Vui lòng chọn phiên để báo cáo!');
+                return;
+            }
+
+            const targets = sessions[dateKey];
+            const results = {
+                doanhThu: document.getElementById('resultDoanhThu').value,
+                sim: document.getElementById('resultSim').value,
+                vieon: document.getElementById('resultVieon').value,
+				Cam: document.getElementById('resultCam').value,
+                sdp: document.getElementById('resultSdp').value,
+                pkdh: document.getElementById('resultPkdh').value,
+                homePaylater: document.getElementById('resultHomePaylater').value,
+                baoHiem: document.getElementById('resultBaoHiem').value
+            };
+
+            const compare = (target, result) => {
+                if (!target || !result) return '';
+                return parseFloat(result) >= parseFloat(target) ? ' ✅' : '';
+            };
+
+            const report = `🔥MỤC TIÊU NGÀY ${dateKey}🔥
+🔸Doanh Thu: ${targets.doanhThu ? targets.doanhThu + ' triệu' : ''}
+🔸Sim: ${targets.sim}
+🔸Vas: ${targets.vieon}
+🔸SDP: ${targets.sdp}
+🔸Camera: ${targets.Cam}
+🔸PK + ĐH: ${targets.pkdh ? targets.pkdh + ' triệu' : ''}
+🔸Home Paylater: ${targets.homePaylater}
+🔸Bảo Hiểm: ${targets.baoHiem}
+---------------------------
+🏁KẾT QUẢ🏁 
+🔹Doanh Thu: ${results.doanhThu ? results.doanhThu + ' triệu' : ''}${compare(targets.doanhThu, results.doanhThu)}
+🔹Sim: ${results.sim}${compare(targets.sim, results.sim)}
+🔹Vas: ${results.vieon}${compare(targets.vieon, results.vieon)}
+🔹SDP: ${results.sdp}${compare(targets.sdp, results.sdp)}
+🔹Camera: ${results.Cam}${compare(targets.Cam, results.Cam)}
+🔹PK + ĐH: ${results.pkdh ? results.pkdh + ' triệu' : ''}${compare(targets.pkdh, results.pkdh)}
+🔹Home Paylater: ${results.homePaylater}${compare(targets.homePaylater, results.homePaylater)}
+🔹Bảo Hiểm: ${results.baoHiem}${compare(targets.baoHiem, results.baoHiem)}`;
+
+            document.getElementById('result').innerHTML = `<pre>${report}</pre>`;
+            navigator.clipboard.writeText(report)
+                .then(() => alert('Đã copy báo cáo kết quả vào clipboard!'))
+                .catch(err => console.error('Lỗi khi copy: ', err));
+        }
+
+        function toggleResultForm() {
+            const resultTab = document.getElementById('resultTab');
+            const checkbox = document.getElementById('showResultForm');
+            resultTab.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

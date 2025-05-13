@@ -1,0 +1,273 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính Bảo Hành Samsung Care+</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center min-h-screen py-10">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg animate-slide-up">
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-blue-600"><i class="fas fa-shield-alt mr-2"></i>Bảo Hành Samsung Care+</h1>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-mobile-alt mr-1"></i> Danh mục sản phẩm</label>
+            <select id="productCategory" class="block w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-400 transition" onchange="updatePriceRange()">
+                <option value="phone_tablet">Điện thoại & Máy tính bảng</option>
+                <option value="smartwatch">Đồng hồ thông minh</option>
+            </select>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-tags mr-1"></i> Khung giá thiết bị</label>
+            <select id="priceRange" class="block w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-400 transition" onchange="calculateWarranty()">
+                <option value="">Chọn khung giá</option>
+            </select>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-money-bill-wave mr-1"></i> Giá trị sản phẩm (VNĐ)</label>
+            <input type="number" id="productPrice" class="block w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-400 transition" oninput="formatPrice(this); validatePrice(); calculateWarranty()" placeholder="Nhập số tiền">
+            <span id="formattedPrice" class="text-sm text-gray-500 mt-1 block"></span>
+            <span id="priceError" class="error-message"></span>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-percent mr-1"></i> Giảm giá</label>
+            <div class="flex flex-wrap gap-2">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" id="discount10" value="0.10" class="form-checkbox h-5 w-5 text-blue-600" onchange="calculateWarranty()"> <span class="ml-2 text-sm">10%</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="checkbox" id="discount15" value="0.15" class="form-checkbox h-5 w-5 text-blue-600" onchange="calculateWarranty()"> <span class="ml-2 text-sm">15%</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="checkbox" id="discount20" value="0.20" class="form-checkbox h-5 w-5 text-blue-600" onchange="calculateWarranty()"> <span class="ml-2 text-sm">20%</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="checkbox" id="discount25" value="0.25" class="form-checkbox h-5 w-5 text-blue-600" onchange="calculateWarranty()"> <span class="ml-2 text-sm">25%</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="checkbox" id="discount30" value="0.30" class="form-checkbox h-5 w-5 text-blue-600" onchange="calculateWarranty()"> <span class="ml-2 text-sm">30%</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-tools mr-1"></i> Giá gói bảo hành Samsung Care+</label>
+            <div class="mt-2 bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm"><i class="fas fa-clock mr-1"></i> 6 tháng: <span id="warranty6m" class="font-medium"></span></p>
+                <p class="text-sm"><i class="fas fa-clock mr-1"></i> 12 tháng: <span id="warranty12m" class="font-medium"></span></p>
+                <p class="text-sm"><i class="fas fa-clock mr-1"></i> 24 tháng: <span id="warranty24m" class="font-medium"></span></p>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-bold text-blue-600 mb-4"><i class="fas fa-star mr-2"></i> Quyền lợi bảo hành Samsung Care+</h2>
+            
+            <div class="mb-6 hover-scale transition-transform p-4 bg-blue-50 rounded-lg">
+                <h3 class="text-lg font-semibold text-blue-700 mb-2"><i class="fas fa-shield-alt mr-2"></i> Gói 6 Tháng & 12 Tháng</h3>
+                <ul class="text-sm text-gray-600 list-disc pl-5">
+                    <li><strong>Tai nạn rơi vỡ và chất lỏng</strong>: Bảo vệ & không giới hạn giá trị bảo vệ.</li>
+                    <li><strong>Mở rộng bảo hành</strong>: Thêm 3 tháng bảo hành hãng.</li>
+                    <li><strong>Thay thế máy mới</strong>: Khi phí sửa chữa vượt quá 85% giá mua thiết bị hoặc không thể sửa chữa (Tối đa 1 lần).</li>
+                </ul>
+            </div>
+
+            <div class="mb-6 hover-scale transition-transform p-4 bg-blue-50 rounded-lg">
+                <h3 class="text-lg font-semibold text-blue-700 mb-2"><i class="fas fa-shield-alt mr-2"></i> Gói 24 Tháng</h3>
+                <ul class="text-sm text-gray-600 list-disc pl-5">
+                    <li><strong>Tai nạn rơi vỡ và chất lỏng</strong>: Bảo vệ & không giới hạn giá trị bảo vệ.</li>
+                    <li><strong>Mở rộng bảo hành</strong>: Thêm 12 tháng bảo hành hãng.</li>
+                    <li><strong>Thay thế máy mới</strong>: Khi phí sửa chữa vượt quá 85% giá mua thiết bị hoặc không thể sửa chữa (Tối đa 2 lần).</li>
+                </ul>
+            </div>
+
+            <div class="hover-scale transition-transform p-4 bg-blue-50 rounded-lg">
+                <h3 class="text-lg font-semibold text-blue-700 mb-2"><i class="fas fa-mobile-alt mr-2"></i> Với Z Fold/Z Flip</h3>
+                <p class="text-sm text-gray-600">Không giới hạn giá trị bảo vệ & có áp dụng phí sửa chữa:</p>
+                <ul class="text-sm text-gray-600 list-disc pl-5 mt-2">
+                    <li><strong>Z Fold</strong>: 2,490,000 VNĐ</li>
+                    <li><strong>Z Flip</strong>: 1,190,000 VNĐ</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const warrantyData = {
+            phone_tablet: [
+                { range: "3,000,000 – 4,500,000", min: 3000000, max: 4500000, m6: 299000, y1: 459000, y2: 799000 },
+                { range: "4,500,001 – 8,000,000", min: 4500001, max: 8000000, m6: 449000, y1: 699000, y2: 1199000 },
+                { range: "8,000,001 – 16,000,000", min: 8000001, max: 16000000, m6: 699000, y1: 1099000, y2: 1899000 },
+                { range: "16,000,001 – 45,000,000", min: 16000001, max: 45000000, m6: 1299000, y1: 2029000, y2: 3399000 },
+                { range: "Z Flip series", min: 0, max: Infinity, m6: 2990000, y1: 3590000, y2: 6290000 },
+                { range: "Z Fold series", min: 0, max: Infinity, m6: 3790000, y1: 5090000, y2: 9290000 }
+            ],
+            smartwatch: [
+                { range: "3,000,000 – 8,000,000", min: 3000000, max: 8000000, m6: 369000, y1: 599000, y2: 1099000 },
+                { range: "8,000,001 – 11,000,000", min: 8000001, max: 11000000, m6: 469000, y1: 769000, y2: 1399000 },
+                { range: "11,000,001 – 18,000,000", min: 11000001, max: 18000000, m6: 629000, y1: 1029000, y2: 1999000 }
+            ]
+        };
+
+        function updatePriceRange() {
+            const category = document.getElementById('productCategory').value;
+            const priceRangeSelect = document.getElementById('priceRange');
+            priceRangeSelect.innerHTML = '<option value="">Chọn khung giá</option>';
+            
+            warrantyData[category].forEach(data => {
+                const option = document.createElement('option');
+                option.value = data.range;
+                option.textContent = data.range;
+                priceRangeSelect.appendChild(option);
+            });
+            
+            validatePrice();
+            calculateWarranty();
+        }
+
+        function formatPrice(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value) {
+                value = parseInt(value).toLocaleString('vi-VN');
+                document.getElementById('formattedPrice').textContent = value + ' VNĐ';
+            } else {
+                document.getElementById('formattedPrice').textContent = '';
+            }
+        }
+
+        function validatePrice() {
+            const category = document.getElementById('productCategory').value;
+            const priceInput = document.getElementById('productPrice').value.replace(/\D/g, '');
+            const price = parseInt(priceInput) || 0;
+            const priceRangeSelect = document.getElementById('priceRange');
+            const priceError = document.getElementById('priceError');
+            let selectedRange = '';
+
+            if (price > 0) {
+                const ranges = warrantyData[category];
+                for (const data of ranges) {
+                    if (price >= data.min && price <= data.max) {
+                        selectedRange = data.range;
+                        break;
+                    }
+                }
+                if (selectedRange) {
+                    priceRangeSelect.value = selectedRange;
+                    priceError.textContent = '';
+                } else {
+                    priceRangeSelect.value = '';
+                    priceError.textContent = 'Giá trị sản phẩm không nằm trong khung giá hợp lệ.';
+                }
+            } else {
+                priceRangeSelect.value = '';
+                priceError.textContent = '';
+            }
+            calculateWarranty();
+        }
+
+        function calculateWarranty() {
+            const category = document.getElementById('productCategory').value;
+            const priceRange = document.getElementById('priceRange').value;
+            const discountCheckboxes = [
+                document.getElementById('discount10'),
+                document.getElementById('discount15'),
+                document.getElementById('discount20'),
+                document.getElementById('discount25'),
+                document.getElementById('discount30')
+            ];
+
+            let discount = 0;
+            discountCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    discount = Math.max(discount, parseFloat(checkbox.value));
+                }
+            });
+
+            let m6Cost = 0, y1Cost = 0, y2Cost = 0;
+            if (priceRange) {
+                const data = warrantyData[category].find(d => d.range === priceRange);
+                if (data) {
+                    m6Cost = data.m6 * (1 - discount);
+                    y1Cost = data.y1 * (1 - discount);
+                    y2Cost = data.y2 * (1 - discount);
+                }
+            }
+
+            document.getElementById('warranty6m').textContent = m6Cost ? Math.round(m6Cost).toLocaleString('vi-VN') + ' VNĐ' : 'Chọn khung giá';
+            document.getElementById('warranty12m').textContent = y1Cost ? Math.round(y1Cost).toLocaleString('vi-VN') + ' VNĐ' : 'Chọn khung giá';
+            document.getElementById('warranty24m').textContent = y2Cost ? Math.round(y2Cost).toLocaleString('vi-VN') + ' VNĐ' : 'Chọn khung giá';
+        }
+
+        // Initialize price range on page load
+        updatePriceRange();
+    </script>
+</body>
+</html>
