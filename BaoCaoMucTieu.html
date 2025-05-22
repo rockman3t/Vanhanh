@@ -127,6 +127,21 @@
         <h2>Điền Mục Tiêu Ngày</h2>
         <form id="targetForm">
             <div class="form-group">
+                <label for="userName">User - Tên NV:</label>
+                <input type="text" id="userName" name="userName" placeholder="Nhập tên nhân viên">
+            </div>
+            <div class="form-group">
+                <label>Ca LV:</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" name="caLV" value="1"> Ca 1</label>
+                    <label><input type="checkbox" name="caLV" value="2"> Ca 2</label>
+                    <label><input type="checkbox" name="caLV" value="3"> Ca 3</label>
+                    <label><input type="checkbox" name="caLV" value="4"> Ca 4</label>
+                    <label><input type="checkbox" name="caLV" value="5"> Ca 5</label>
+                    <label><input type="checkbox" name="caLV" value="6"> Ca 6</label>
+                </div>
+            </div>
+            <div class="form-group">
                 <label>Doanh Thu (triệu):</label>
                 <input type="number" id="doanhThu" name="doanhThu" step="0.1">
             </div>
@@ -142,7 +157,7 @@
                 <label>Sạc Dự Phòng:</label>
                 <input type="text" id="sdp" name="sdp">
             </div>
-			  <div class="form-group">
+            <div class="form-group">
                 <label>Camera:</label>
                 <input type="text" id="Cam" name="Cam">
             </div>
@@ -195,7 +210,7 @@
                 <label>Sạc Dự Phòng:</label>
                 <input type="text" id="resultSdp">
             </div>
-			<div class="form-group">
+            <div class="form-group">
                 <label>Camera:</label>
                 <input type="text" id="resultCam">
             </div>
@@ -252,11 +267,13 @@
             const dateKey = dateMatch[0];
 
             const targets = {
+                userName: document.getElementById('userName').value,
+                caLV: Array.from(document.querySelectorAll('input[name="caLV"]:checked')).map(cb => cb.value).join(', '),
                 sessionName: sessionName,
                 doanhThu: document.getElementById('doanhThu').value,
                 sim: document.getElementById('sim').value,
                 vieon: document.getElementById('vieon').value,
-				Cam: document.getElementById('Cam').value,
+                Cam: document.getElementById('Cam').value,
                 sdp: document.getElementById('sdp').value,
                 pkdh: document.getElementById('pkdh').value,
                 homePaylater: document.getElementById('homePaylater').value,
@@ -273,25 +290,7 @@
 
             localStorage.setItem('sessions', JSON.stringify(sessions));
 
-            const report = `🔥MỤC TIÊU NGÀY ${dateKey}🔥
-🔸Doanh Thu: ${targets.doanhThu ? targets.doanhThu + ' triệu' : ''}
-🔸Sim: ${targets.sim}
-🔸Vas: ${targets.vieon}
-🔸SDP: ${targets.sdp}
-🔸Camera: ${targets.Cam}
-🔸PK + ĐH: ${targets.pkdh ? targets.pkdh + ' triệu' : ''}
-🔸Home Paylater: ${targets.homePaylater}
-🔸Bảo Hiểm: ${targets.baoHiem}
----------------------------
-🏁KẾT QUẢ🏁 
-🔹Doanh Thu: 
-🔹Sim: 
-🔹Vas: 
-🔹SDP: 
-🔹Camera: 
-🔹PK + ĐH: 
-🔹Home Paylater: 
-🔹Bảo Hiểm: `;
+            const report = `🏅 User - Tên NV: ${targets.userName || 'Chưa nhập'}\n🔢 Ca LV: ${targets.caLV || 'Chưa chọn'}\n\n🔥MỤC TIÊU NGÀY ${dateKey}🔥\n🔸Doanh Thu: ${targets.doanhThu ? targets.doanhThu + ' triệu' : ''}\n🔸Sim: ${targets.sim}\n🔸Vas: ${targets.vieon}\n🔸SDP: ${targets.sdp}\n🔸Camera: ${targets.Cam}\n🔸PK + ĐH: ${targets.pkdh ? targets.pkdh + ' triệu' : ''}\n🔸Home Paylater: ${targets.homePaylater}\n🔸Bảo Hiểm: ${targets.baoHiem}\n-------------------------\n🏁KẾT QUẢ🏁 \n🔹Doanh Thu: \n🔹Sim: \n🔹Vas: \n🔹SDP: \n🔹Camera: \n🔹PK + ĐH: \n🔹Home Paylater: \n🔹Bảo Hiểm: `;
 
             document.getElementById('result').innerHTML = `<pre>${report}</pre>`;
             navigator.clipboard.writeText(report)
@@ -316,10 +315,15 @@
             if (!dateKey) return;
 
             const targets = sessions[dateKey];
+            document.getElementById('userName').value = targets.userName || '';
+            const caLVValues = targets.caLV ? targets.caLV.split(', ') : [];
+            document.querySelectorAll('input[name="caLV"]').forEach(cb => {
+                cb.checked = caLVValues.includes(cb.value);
+            });
             document.getElementById('doanhThu').value = targets.doanhThu;
             document.getElementById('sim').value = targets.sim;
             document.getElementById('vieon').value = targets.vieon;
-			document.getElementById('Cam').value = targets.Cam;
+            document.getElementById('Cam').value = targets.Cam;
             document.getElementById('sdp').value = targets.sdp;
             document.getElementById('pkdh').value = targets.pkdh;
             document.getElementById('homePaylater').value = targets.homePaylater;
@@ -339,7 +343,7 @@
                 doanhThu: document.getElementById('resultDoanhThu').value,
                 sim: document.getElementById('resultSim').value,
                 vieon: document.getElementById('resultVieon').value,
-				Cam: document.getElementById('resultCam').value,
+                Cam: document.getElementById('resultCam').value,
                 sdp: document.getElementById('resultSdp').value,
                 pkdh: document.getElementById('resultPkdh').value,
                 homePaylater: document.getElementById('resultHomePaylater').value,
@@ -351,25 +355,7 @@
                 return parseFloat(result) >= parseFloat(target) ? ' ✅' : '';
             };
 
-            const report = `🔥MỤC TIÊU NGÀY ${dateKey}🔥
-🔸Doanh Thu: ${targets.doanhThu ? targets.doanhThu + ' triệu' : ''}
-🔸Sim: ${targets.sim}
-🔸Vas: ${targets.vieon}
-🔸SDP: ${targets.sdp}
-🔸Camera: ${targets.Cam}
-🔸PK + ĐH: ${targets.pkdh ? targets.pkdh + ' triệu' : ''}
-🔸Home Paylater: ${targets.homePaylater}
-🔸Bảo Hiểm: ${targets.baoHiem}
----------------------------
-🏁KẾT QUẢ🏁 
-🔹Doanh Thu: ${results.doanhThu ? results.doanhThu + ' triệu' : ''}${compare(targets.doanhThu, results.doanhThu)}
-🔹Sim: ${results.sim}${compare(targets.sim, results.sim)}
-🔹Vas: ${results.vieon}${compare(targets.vieon, results.vieon)}
-🔹SDP: ${results.sdp}${compare(targets.sdp, results.sdp)}
-🔹Camera: ${results.Cam}${compare(targets.Cam, results.Cam)}
-🔹PK + ĐH: ${results.pkdh ? results.pkdh + ' triệu' : ''}${compare(targets.pkdh, results.pkdh)}
-🔹Home Paylater: ${results.homePaylater}${compare(targets.homePaylater, results.homePaylater)}
-🔹Bảo Hiểm: ${results.baoHiem}${compare(targets.baoHiem, results.baoHiem)}`;
+            const report = `🏅 User - Tên NV: ${targets.userName || 'Chưa nhập'}\n🔢 Ca LV: ${targets.caLV || 'Chưa chọn'}\n\n🔥MỤC TIÊU NGÀY ${dateKey}🔥\n🔸Doanh Thu: ${targets.doanhThu ? targets.doanhThu + ' triệu' : ''}\n🔸Sim: ${targets.sim}\n🔸Vas: ${targets.vieon}\n🔸SDP: ${targets.sdp}\n🔸Camera: ${targets.Cam}\n🔸PK + ĐH: ${targets.pkdh ? targets.pkdh + ' triệu' : ''}\n🔸Home Paylater: ${targets.homePaylater}\n🔸Bảo Hiểm: ${targets.baoHiem}\n-------------------------\n🏁KẾT QUẢ🏁 \n🔹Doanh Thu: ${results.doanhThu ? results.doanhThu + ' triệu' : ''}${compare(targets.doanhThu, results.doanhThu)}\n🔹Sim: ${results.sim}${compare(targets.sim, results.sim)}\n🔹Vas: ${results.vieon}${compare(targets.vieon, results.vieon)}\n🔹SDP: ${results.sdp}${compare(targets.sdp, results.sdp)}\n🔹Camera: ${results.Cam}${compare(targets.Cam, results.Cam)}\n🔹PK + ĐH: ${results.pkdh ? results.pkdh + ' triệu' : ''}${compare(targets.pkdh, results.pkdh)}\n🔹Home Paylater: ${results.homePaylater}${compare(targets.homePaylater, results.homePaylater)}\n🔹Bảo Hiểm: ${results.baoHiem}${compare(targets.baoHiem, results.baoHiem)}`;
 
             document.getElementById('result').innerHTML = `<pre>${report}</pre>`;
             navigator.clipboard.writeText(report)
