@@ -50,6 +50,13 @@
         .input-form button:hover {
             background-color: #0056b3;
         }
+        .scan-button {
+            background-color: #17a2b8;
+            margin-left: 10px;
+        }
+        .scan-button:hover {
+            background-color: #138496;
+        }
         .product-list {
             background: #fff;
             padding: 15px;
@@ -149,6 +156,36 @@
         .copy-button:hover {
             background-color: #138496;
         }
+        #scanner-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        #scanner-video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        #close-scanner {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #close-scanner:hover {
+            background-color: #c82333;
+        }
         @media (min-width: 768px) {
             .container {
                 flex-direction: row;
@@ -186,6 +223,7 @@
         </label>
         <label>Imei/Sn:
             <input type="text" id="imeiSn" placeholder="Nhập IMEI hoặc Serial Number">
+            <button class="scan-button" id="scanBarcode">Quét mã</button>
         </label>
         <button id="showProductList">Hiển thị danh sách bảo hành</button>
     </div>
@@ -203,8 +241,13 @@
             <div class="customer-message" id="customerMessage" style="display: none;"></div>
         </div>
     </div>
+    <div id="scanner-container">
+        <video id="scanner-video" autoplay></video>
+        <button id="close-scanner">Đóng</button>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script>
         const products = [
             { name: "Điện thoại", group: "Sản phẩm chính", policies: [1, 2, 3] },
@@ -330,13 +373,68 @@
             const previewButton = document.getElementById('previewBtn');
             const sendToCustomerBtn = document.getElementById('sendToCustomerBtn');
             const showProductListBtn = document.getElementById('showProductList');
+            const scanBarcodeBtn = document.getElementById('scanBarcode');
+            const scannerContainer = document.getElementById('scanner-container');
+            const scannerVideo = document.getElementById('scanner-video');
+            const closeScannerBtn = document.getElementById('close-scanner');
+            const imeiSnInput = document.getElementById('imeiSn');
+
+            // Hàm khởi tạo quét mã
+            function initScanner() {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: scannerVideo,
+                        constraints: {
+                            facingMode: "environment" // Sử dụng camera sau trên di động
+                        }
+                    },
+                    decoder: {
+                        readers: [
+                            'code_128_reader', // Dùng cho IMEI
+                            'ean_reader',
+                            'ean_8_reader',
+                            'upc_reader',
+                            'qr_reader' // Hỗ trợ QR Code
+                        ]
+                    }
+                }, function(err) {
+                    if (err) {
+                        alert('Lỗi khởi tạo quét mã: ' + err);
+                        return;
+                    }
+                    Quagga.start();
+                });
+
+                Quagga.onDetected(function(result) {
+                    const code = result.codeResult.code;
+                    imeiSnInput.value = code; // Điền mã vào ô Imei/Sn
+                    Quagga.stop();
+                    scannerContainer.style.display = 'none';
+                    scannerVideo.srcObject.getTracks().forEach(track => track.stop());
+                });
+            }
+
+            // Mở camera khi nhấn nút quét
+            scanBarcodeBtn.addEventListener('click', () => {
+                scannerContainer.style.display = 'flex';
+                initScanner();
+            });
+
+            // Đóng camera
+            closeScannerBtn.addEventListener('click', () => {
+                Quagga.stop();
+                scannerContainer.style.display = 'none';
+                scannerVideo.srcObject.getTracks().forEach(track => track.stop());
+            });
 
             showProductListBtn.addEventListener('click', () => {
                 const customerName = document.getElementById('customerName').value.trim();
                 const phoneNumber = document.getElementById('phoneNumber').value.trim();
                 const gender = document.getElementById('gender').value;
                 const product = document.getElementById('product').value.trim();
-                const imeiSn = document.getElementById('imeiSn').value.trim();
+                const imeiSn = imeiSnInput.value.trim();
 
                 if (customerName && phoneNumber && product && imeiSn) {
                     productList.style.display = 'block';
@@ -424,7 +522,7 @@
                     const gender = document.getElementById('gender').value;
                     const customerName = document.getElementById('customerName').value.trim();
                     const product = document.getElementById('product').value.trim();
-                    const imeiSn = document.getElementById('imeiSn').value.trim();
+                    const imeiSn = imeiSnInput.value.trim();
 
                     let salutation = gender === 'Nam' ? 'anh' : gender === 'Nữ' ? 'chị' : 'quý khách';
                     const thankYouMessage = `Cảm ơn ${salutation} ${customerName} đã mua ${product} có Imei/Sn ${imeiSn} ở Thế Giới Di Động 221 Đặng Thúc Vịnh ạ.`;
