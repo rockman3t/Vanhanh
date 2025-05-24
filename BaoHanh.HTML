@@ -383,16 +383,17 @@
             // Hàm kiểm tra và yêu cầu quyền camera
             async function checkCameraAccess() {
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } });
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     stream.getTracks().forEach(track => track.stop());
                     return true;
                 } catch (err) {
-                    alert('Vui lòng cấp quyền truy cập camera trong cài đặt trình duyệt để sử dụng tính năng quét mã.');
+                    console.error('Lỗi quyền camera:', err);
+                    alert('Không thể truy cập camera. Vui lòng kiểm tra cài đặt quyền trong trình duyệt.');
                     return false;
                 }
             }
 
-            // Hàm khởi tạo quét mã
+            // Hàm khởi tạo quét mã với xử lý lỗi chi tiết
             async function initScanner() {
                 if (!await checkCameraAccess()) return;
 
@@ -400,10 +401,12 @@
                     inputStream: {
                         name: "Live",
                         type: "LiveStream",
-                        target: scannerVideo,
+                        target: document.getElementById('scanner-video'),
                         constraints: {
                             video: {
-                                facingMode: { exact: "environment" } // Ưu tiên camera sau
+                                facingMode: "environment", // Thử không dùng 'exact'
+                                width: { min: 640 },
+                                height: { min: 480 }
                             }
                         }
                     },
@@ -418,15 +421,18 @@
                     }
                 }, function(err) {
                     if (err) {
-                        alert('Lỗi khởi tạo quét mã: ' + err.message);
+                        console.error('Lỗi khởi tạo Quagga:', err);
+                        alert('Lỗi khởi tạo quét mã: ' + (err.message || 'Không thể mở camera. Vui lòng thử lại hoặc kiểm tra thiết bị.'));
                         scannerContainer.style.display = 'none';
                         return;
                     }
+                    console.log('Quagga khởi tạo thành công');
                     Quagga.start();
                 });
 
                 Quagga.onDetected(function(result) {
                     const code = result.codeResult.code;
+                    console.log('Mã quét được:', code);
                     imeiSnInput.value = code;
                     Quagga.stop();
                     scannerContainer.style.display = 'none';
@@ -434,16 +440,28 @@
                         scannerVideo.srcObject.getTracks().forEach(track => track.stop());
                     }
                 });
+
+                // Xử lý lỗi khi luồng video không hoạt động
+                Quagga.onProcessed(function(result) {
+                    if (result && result.frame) {
+                        const canvas = Quagga.canvas.dom;
+                        if (canvas) {
+                            canvas.style.display = 'none'; // Ẩn canvas nếu không cần
+                        }
+                    }
+                });
             }
 
             // Mở camera khi nhấn nút quét
             scanBarcodeBtn.addEventListener('click', async () => {
+                console.log('Mở scanner...');
                 scannerContainer.style.display = 'flex';
                 await initScanner();
             });
 
             // Đóng camera
             closeScannerBtn.addEventListener('click', () => {
+                console.log('Đóng scanner...');
                 Quagga.stop();
                 scannerContainer.style.display = 'none';
                 if (scannerVideo.srcObject) {
