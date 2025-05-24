@@ -21,6 +21,35 @@
             flex-direction: column;
             gap: 20px;
         }
+        .input-form {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .input-form label {
+            display: block;
+            margin: 10px 0;
+        }
+        .input-form input, .input-form select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-form button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .input-form button:hover {
+            background-color: #0056b3;
+        }
         .product-list {
             background: #fff;
             padding: 15px;
@@ -28,6 +57,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             min-height: 100px;
             overflow: auto;
+            display: none;
         }
         .product-list label {
             display: block;
@@ -39,7 +69,7 @@
             padding: 15px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            min-Hello World! height: 200px;
+            min-height: 200px;
         }
         .warranty-info h2 {
             color: #007bff;
@@ -57,7 +87,7 @@
             margin: 10px 0;
             padding-left: 20px;
         }
-        .print-button, .preview-button {
+        .print-button, .preview-button, .send-button {
             display: inline-block;
             margin: 10px 5px;
             padding: 10px 20px;
@@ -79,7 +109,13 @@
         .preview-button:hover {
             background-color: #218838;
         }
-        .print-button:disabled, .preview-button:disabled {
+        .send-button {
+            background-color: #ffc107;
+        }
+        .send-button:hover {
+            background-color: #e0a800;
+        }
+        .print-button:disabled, .preview-button:disabled, .send-button:disabled {
             background-color: #6c757d;
             cursor: not-allowed;
         }
@@ -92,6 +128,26 @@
             height: 500px;
             border: 1px solid #ccc;
             border-radius: 5px;
+        }
+        .customer-message {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .copy-button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .copy-button:hover {
+            background-color: #138496;
         }
         @media (min-width: 768px) {
             .container {
@@ -110,23 +166,46 @@
 </head>
 <body>
     <h1>Danh Sách Sản Phẩm Bảo Hành</h1>
+    <div class="input-form">
+        <label>Tên Khách Hàng:
+            <input type="text" id="customerName" placeholder="Nhập tên khách hàng">
+        </label>
+        <label>SĐT:
+            <input type="text" id="phoneNumber" placeholder="Nhập số điện thoại">
+        </label>
+        <label>Giới Tính:
+            <select id="gender">
+                <option value="">Chọn giới tính</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+            </select>
+        </label>
+        <label>Sản Phẩm:
+            <input type="text" id="product" placeholder="Nhập tên sản phẩm">
+        </label>
+        <label>Imei/Sn:
+            <input type="text" id="imeiSn" placeholder="Nhập IMEI hoặc Serial Number">
+        </label>
+        <button id="showProductList">Hiển thị danh sách bảo hành</button>
+    </div>
     <div class="container">
-        <div class="product-list">
+        <div class="product-list" id="productList">
             <h2>Chọn Sản Phẩm</h2>
-            <!-- Danh sách checkbox sẽ được tạo động bằng JavaScript -->
         </div>
         <div class="warranty-info" id="warrantyInfo">
             <h2>Thông Tin Bảo Hành</h2>
             <button class="preview-button" id="previewBtn" disabled>Xem trước PDF</button>
             <button class="print-button" id="printBtn" disabled>In</button>
-            <p>Vui lòng chọn sản phẩm để xem thông tin bảo hành theo nhóm.</p>
+            <button class="send-button" id="sendToCustomerBtn" disabled>Gửi nội dung cho khách hàng</button>
+            <p>Vui lòng nhập thông tin và nhấn "Hiển thị danh sách bảo hành" để tiếp tục.</p>
             <div class="pdf-preview" id="pdfPreview"></div>
+            <div class="customer-message" id="customerMessage" style="display: none;"></div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        // Dữ liệu sản phẩm từ sheet "Nhom BH" (bao gồm nhóm)
         const products = [
             { name: "Điện thoại", group: "Sản phẩm chính", policies: [1, 2, 3] },
             { name: "Laptop", group: "Sản phẩm chính", policies: [1, 2, 3] },
@@ -162,12 +241,11 @@
             { name: "PK Apple", group: "Phụ Kiện Apple", policies: [7] }
         ];
 
-        // Dữ liệu chính sách bảo hành
         const policies = {
-            10: {
+            1: {
                 name: "✾ BẢO HÀNH CÓ CAM KẾT",
                 content: [
-                    "‣ Chế độ dành cho sản phẩm chính, không áp dụng cho phụ kiện đi kèm.",
+                    "‣ Chế độ dành cho sản phẩm chính.",
                     "‣ Bảo hành trong 15 ngày (tính từ ngày nhận máy lỗi đến ngày trả máy).",
                     "‣ Không bảo hành lại lần 2 trong 30 ngày kể từ ngày bảo hành xong.",
                     "‣ Nếu vi phạm cam kết (quá 15 ngày hoặc phải bảo hành lại sản phẩm lần nữa trong 30 ngày), khách hàng được áp dụng 'Hư gì đổi nấy' hoặc 'Hoàn tiền' với mức phí giảm 50%.",
@@ -179,13 +257,12 @@
                 name: "✾ CHÍNH SÁCH ĐỔI TRẢ",
                 content: [
                     "‣ Đổi sản phẩm chính cùng model, màu sắc:",
-                    "- Tháng đầu lỗi kỹ thuật(có xác nhận của hãng): được đổi miễn phí.",
+                    "- Tháng đầu lỗi kỹ thuật (có xác nhận của hãng): được đổi miễn phí.",
                     "- Tháng 2-12: phí 10% giá trị hóa đơn (VD: tháng 3 phí 20%).",
                     "‣ Đổi phụ kiện đi kèm miễn phí trong 12 tháng bằng phụ kiện tương đương.",
                     "‣ Lỗi phần mềm chỉ khắc phục, không đổi.",
-                    "‣ Nếu không có sản phẩm đổi,'Hoàn tiền' với mức phí giảm 50%.",
-					" ",
-					"** Xác nhận lỗi từ hãng : máy sẽ được gửi về hãng từ 7 - 10 ngày để kiểm định lỗi.",
+                    "‣ Nếu không có sản phẩm đổi, 'Hoàn tiền' với mức phí giảm 50%.",
+                    "*** Xác nhận lỗi từ hãng: máy sẽ được gửi về hãng từ 7 - 10 ngày để kiểm định lỗi."
                 ],
                 conditions: "‣ Sản phẩm không trầy xước, giữ nguyên hình dạng ban đầu, đủ điều kiện bảo hành hãng."
             },
@@ -240,48 +317,52 @@
             8: {
                 name: "✾ PHỤ KIỆN",
                 content: [
-                    "‣ Bảo hành 1 đổi 1 lỗi kỹ thuật phụ kiện",
-                    ""
+                    "‣ Bảo hành 1 đổi 1 lỗi kỹ thuật phụ kiện."
                 ],
-                conditions: "‣ Sản phẩm không đứt/gãy,cấn móp"
+                conditions: "‣ Sản phẩm không đứt/gãy, cấn móp."
             }
         };
 
-        // Xử lý khi DOM tải xong
         document.addEventListener('DOMContentLoaded', () => {
-            const productList = document.querySelector('.product-list');
+            const productList = document.getElementById('productList');
             const warrantyInfo = document.getElementById('warrantyInfo');
             const printButton = document.getElementById('printBtn');
             const previewButton = document.getElementById('previewBtn');
+            const sendToCustomerBtn = document.getElementById('sendToCustomerBtn');
+            const showProductListBtn = document.getElementById('showProductList');
 
-            // Kiểm tra phần tử productList
-            if (!productList) {
-                console.error('Không tìm thấy phần tử .product-list');
-                return;
-            }
+            showProductListBtn.addEventListener('click', () => {
+                const customerName = document.getElementById('customerName').value.trim();
+                const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                const gender = document.getElementById('gender').value;
+                const product = document.getElementById('product').value.trim();
+                const imeiSn = document.getElementById('imeiSn').value.trim();
 
-            // Kiểm tra mảng products
-            console.log('Products:', products);
-            if (!products || products.length === 0) {
-                console.error('Mảng products rỗng hoặc không hợp lệ');
-                productList.innerHTML = '<p>Không có sản phẩm nào để hiển thị.</p>';
-                return;
-            }
+                if (customerName && phoneNumber && product && imeiSn) {
+                    productList.style.display = 'block';
+                    warrantyInfo.innerHTML = `
+                        <h2>Thông Tin Bảo Hành</h2>
+                        <button class="preview-button" id="previewBtn" disabled>Xem trước PDF</button>
+                        <button class="print-button" id="printBtn" disabled>In</button>
+                        <button class="send-button" id="sendToCustomerBtn" disabled>Gửi nội dung cho khách hàng</button>
+                        <p>Vui lòng chọn sản phẩm từ danh sách để xem thông tin bảo hành.</p>
+                        <div class="pdf-preview" id="pdfPreview"></div>
+                        <div class="customer-message" id="customerMessage" style="display: none;"></div>
+                    `;
 
-            // Tạo danh sách checkbox động
-            products.forEach(product => {
-                if (!product.name || !product.group) {
-                    console.warn('Sản phẩm không hợp lệ:', product);
-                    return;
+                    if (productList.children.length <= 1) {
+                        products.forEach(product => {
+                            const label = document.createElement('label');
+                            label.innerHTML = `<input type="checkbox" value="${product.name}" data-group="${product.group}"> ${product.name}`;
+                            productList.appendChild(label);
+                        });
+                    }
+                } else {
+                    alert('Vui lòng điền đầy đủ thông tin: Tên Khách Hàng, SĐT, Sản Phẩm, Imei/Sn.');
                 }
-                console.log('Tạo checkbox cho:', product.name);
-                const label = document.createElement('label');
-                label.innerHTML = `<input type="checkbox" value="${product.name}" data-group="${product.group}"> ${product.name}`;
-                productList.appendChild(label);
             });
 
-            // Xử lý sự kiện khi checkbox thay đổi
-            let groupPolicies = {}; // Lưu trữ groupPolicies để dùng cho in và preview
+            let groupPolicies = {};
 
             productList.addEventListener('change', () => {
                 const selectedProducts = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(input => ({
@@ -294,15 +375,14 @@
                         <h2>Thông Tin Bảo Hành</h2>
                         <button class="preview-button" id="previewBtn" disabled>Xem trước PDF</button>
                         <button class="print-button" id="printBtn" disabled>In</button>
+                        <button class="send-button" id="sendToCustomerBtn" disabled>Gửi nội dung cho khách hàng</button>
                         <p>Vui lòng chọn sản phẩm để xem thông tin bảo hành theo nhóm.</p>
                         <div class="pdf-preview" id="pdfPreview"></div>
+                        <div class="customer-message" id="customerMessage" style="display: none;"></div>
                     `;
-                    printButton.disabled = true;
-                    previewButton.disabled = true;
                     return;
                 }
 
-                // Nhóm các sản phẩm theo group và lấy chính sách bảo hành
                 groupPolicies = {};
                 selectedProducts.forEach(selected => {
                     const product = products.find(p => p.name === selected.name);
@@ -315,13 +395,11 @@
                     }
                 });
 
-                console.log('groupPolicies trước khi hiển thị:', groupPolicies);
-
-                // Hiển thị thông tin bảo hành theo nhóm
                 let output = `
                     <h2>Thông Tin Bảo Hành</h2>
                     <button class="preview-button" id="previewBtn">Xem trước PDF</button>
                     <button class="print-button" id="printBtn">In</button>
+                    <button class="send-button" id="sendToCustomerBtn">Gửi nội dung cho khách hàng</button>
                 `;
                 Object.keys(groupPolicies).forEach(group => {
                     output += `<h3>Nhóm: ${group}</h3>`;
@@ -338,27 +416,54 @@
                         }
                     });
                 });
-                output += `<div class="pdf-preview" id="pdfPreview"></div>`;
-
+                output += `<div class="pdf-preview" id="pdfPreview"></div>
+                           <div class="customer-message" id="customerMessage" style="display: none;"></div>`;
                 warrantyInfo.innerHTML = output;
-                printButton.disabled = false;
-                previewButton.disabled = false;
 
-                // Thêm sự kiện cho nút Xem trước PDF
-                document.getElementById('previewBtn').addEventListener('click', () => {
-                    const { jsPDF } = window.jspdf;
-                    if (!jsPDF) {
-                        console.error('jsPDF không được tải');
-                        alert('Lỗi: Không thể tải thư viện jsPDF.');
-                        return;
-                    }
+                document.getElementById('sendToCustomerBtn').addEventListener('click', () => {
+                    const gender = document.getElementById('gender').value;
+                    const customerName = document.getElementById('customerName').value.trim();
+                    const product = document.getElementById('product').value.trim();
+                    const imeiSn = document.getElementById('imeiSn').value.trim();
 
-                    const doc = new jsPDF({
-                        orientation: 'portrait',
-                        unit: 'mm',
-                        format: [80, 529]
+                    let salutation = gender === 'Nam' ? 'anh' : gender === 'Nữ' ? 'chị' : 'quý khách';
+                    const thankYouMessage = `Cảm ơn ${salutation} ${customerName} đã mua ${product} có Imei/Sn ${imeiSn} ở Thế Giới Di Động 221 Đặng Thúc Vịnh ạ.`;
+
+                    let warrantyText = 'Em xin tư vấn chính sách bảo hành/đổi trả bên em nhé.\n';
+                    Object.keys(groupPolicies).forEach(group => {
+                        warrantyText += `\nNhóm: ${group}\n`;
+                        const policyIds = Array.from(groupPolicies[group]);
+                        policyIds.sort((a, b) => a - b);
+                        policyIds.forEach(policyId => {
+                            const policy = policies[policyId];
+                            if (policy) {
+                                warrantyText += `${policy.name}\n`;
+                                policy.content.forEach(line => warrantyText += `${line}\n`);
+                                if (policy.conditions) warrantyText += `Điều kiện áp dụng: ${policy.conditions}\n`;
+                            }
+                        });
                     });
 
+                    const fullMessage = `${thankYouMessage}\n\n${warrantyText}`;
+                    const customerMessageDiv = document.getElementById('customerMessage');
+                    customerMessageDiv.innerHTML = `
+                        <pre>${fullMessage}</pre>
+                        <button class="copy-button" id="copyBtn">Sao chép nội dung</button>
+                    `;
+                    customerMessageDiv.style.display = 'block';
+
+                    document.getElementById('copyBtn').addEventListener('click', () => {
+                        navigator.clipboard.writeText(fullMessage).then(() => {
+                            alert('Nội dung đã được sao chép vào clipboard!');
+                        }).catch(err => {
+                            alert('Không thể sao chép nội dung. Vui lòng thử lại.');
+                        });
+                    });
+                });
+
+                document.getElementById('previewBtn').addEventListener('click', () => {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 529] });
                     doc.setFont('helvetica', 'normal');
 
                     let y = 10;
@@ -385,7 +490,7 @@
                         doc.text(`Nhóm: ${group}`, 5, y);
                         y += 6;
 
-                        const policyIds = Array.from(groupPolicies[group] || []);
+                        const policyIds = Array.from(groupPolicies[group]);
                         policyIds.sort((a, b) => a - b);
                         policyIds.forEach(policyId => {
                             const policy = policies[policyId];
@@ -425,37 +530,27 @@
                     });
 
                     const pdfDataUri = doc.output('datauristring');
-                    const pdfPreview = document.getElementById('pdfPreview');
-                    pdfPreview.innerHTML = `<iframe src="${pdfDataUri}" title="PDF Preview"></iframe>`;
+                    document.getElementById('pdfPreview').innerHTML = `<iframe src="${pdfDataUri}" title="PDF Preview"></iframe>`;
                 });
 
-                // Thêm sự kiện cho nút In
                 document.getElementById('printBtn').addEventListener('click', async () => {
                     const serializedGroupPolicies = {};
                     Object.keys(groupPolicies).forEach(group => {
                         serializedGroupPolicies[group] = Array.from(groupPolicies[group]);
                     });
 
-                    const printData = {
-                        groupPolicies: serializedGroupPolicies,
-                        policies: policies
-                    };
-
-                    console.log('Dữ liệu gửi đi in:', printData);
+                    const printData = { groupPolicies: serializedGroupPolicies, policies: policies };
 
                     try {
                         const response = await fetch('http://192.168.137.1:3000/print-warranty', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(printData)
                         });
                         const result = await response.text();
                         alert(result);
                     } catch (error) {
                         alert('Lỗi gửi lệnh in: ' + error.message);
-                        console.error(error);
                     }
                 });
             });
