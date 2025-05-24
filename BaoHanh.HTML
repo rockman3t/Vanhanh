@@ -50,13 +50,6 @@
         .input-form button:hover {
             background-color: #0056b3;
         }
-        .scan-button {
-            background-color: #17a2b8;
-            margin-left: 10px;
-        }
-        .scan-button:hover {
-            background-color: #138496;
-        }
         .product-list {
             background: #fff;
             padding: 15px;
@@ -156,37 +149,6 @@
         .copy-button:hover {
             background-color: #138496;
         }
-        #scanner-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        #scanner-video {
-            max-width: 90%;
-            max-height: 90%;
-            border: 2px solid #fff;
-        }
-        #close-scanner {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #close-scanner:hover {
-            background-color: #c82333;
-        }
         @media (min-width: 768px) {
             .container {
                 flex-direction: row;
@@ -224,7 +186,6 @@
         </label>
         <label>Imei/Sn:
             <input type="text" id="imeiSn" placeholder="Nhập IMEI hoặc Serial Number">
-            <button class="scan-button" id="scanBarcode">Quét mã</button>
         </label>
         <button id="showProductList">Hiển thị danh sách bảo hành</button>
     </div>
@@ -242,13 +203,8 @@
             <div class="customer-message" id="customerMessage" style="display: none;"></div>
         </div>
     </div>
-    <div id="scanner-container">
-        <video id="scanner-video" autoplay></video>
-        <button id="close-scanner">Đóng</button>
-    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script>
         const products = [
             { name: "Điện thoại", group: "Sản phẩm chính", policies: [1, 2, 3] },
@@ -374,107 +330,13 @@
             const previewButton = document.getElementById('previewBtn');
             const sendToCustomerBtn = document.getElementById('sendToCustomerBtn');
             const showProductListBtn = document.getElementById('showProductList');
-            const scanBarcodeBtn = document.getElementById('scanBarcode');
-            const scannerContainer = document.getElementById('scanner-container');
-            const scannerVideo = document.getElementById('scanner-video');
-            const closeScannerBtn = document.getElementById('close-scanner');
-            const imeiSnInput = document.getElementById('imeiSn');
-
-            // Hàm kiểm tra và yêu cầu quyền camera
-            async function checkCameraAccess() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    stream.getTracks().forEach(track => track.stop());
-                    return true;
-                } catch (err) {
-                    console.error('Lỗi quyền camera:', err);
-                    alert('Không thể truy cập camera. Vui lòng kiểm tra cài đặt quyền trong trình duyệt.');
-                    return false;
-                }
-            }
-
-            // Hàm khởi tạo quét mã với xử lý lỗi chi tiết
-            async function initScanner() {
-                if (!await checkCameraAccess()) return;
-
-                Quagga.init({
-                    inputStream: {
-                        name: "Live",
-                        type: "LiveStream",
-                        target: document.getElementById('scanner-video'),
-                        constraints: {
-                            video: {
-                                facingMode: "environment", // Thử không dùng 'exact'
-                                width: { min: 640 },
-                                height: { min: 480 }
-                            }
-                        }
-                    },
-                    decoder: {
-                        readers: [
-                            'code_128_reader',
-                            'ean_reader',
-                            'ean_8_reader',
-                            'upc_reader',
-                            'qr_reader'
-                        ]
-                    }
-                }, function(err) {
-                    if (err) {
-                        console.error('Lỗi khởi tạo Quagga:', err);
-                        alert('Lỗi khởi tạo quét mã: ' + (err.message || 'Không thể mở camera. Vui lòng thử lại hoặc kiểm tra thiết bị.'));
-                        scannerContainer.style.display = 'none';
-                        return;
-                    }
-                    console.log('Quagga khởi tạo thành công');
-                    Quagga.start();
-                });
-
-                Quagga.onDetected(function(result) {
-                    const code = result.codeResult.code;
-                    console.log('Mã quét được:', code);
-                    imeiSnInput.value = code;
-                    Quagga.stop();
-                    scannerContainer.style.display = 'none';
-                    if (scannerVideo.srcObject) {
-                        scannerVideo.srcObject.getTracks().forEach(track => track.stop());
-                    }
-                });
-
-                // Xử lý lỗi khi luồng video không hoạt động
-                Quagga.onProcessed(function(result) {
-                    if (result && result.frame) {
-                        const canvas = Quagga.canvas.dom;
-                        if (canvas) {
-                            canvas.style.display = 'none'; // Ẩn canvas nếu không cần
-                        }
-                    }
-                });
-            }
-
-            // Mở camera khi nhấn nút quét
-            scanBarcodeBtn.addEventListener('click', async () => {
-                console.log('Mở scanner...');
-                scannerContainer.style.display = 'flex';
-                await initScanner();
-            });
-
-            // Đóng camera
-            closeScannerBtn.addEventListener('click', () => {
-                console.log('Đóng scanner...');
-                Quagga.stop();
-                scannerContainer.style.display = 'none';
-                if (scannerVideo.srcObject) {
-                    scannerVideo.srcObject.getTracks().forEach(track => track.stop());
-                }
-            });
 
             showProductListBtn.addEventListener('click', () => {
                 const customerName = document.getElementById('customerName').value.trim();
                 const phoneNumber = document.getElementById('phoneNumber').value.trim();
                 const gender = document.getElementById('gender').value;
                 const product = document.getElementById('product').value.trim();
-                const imeiSn = imeiSnInput.value.trim();
+                const imeiSn = document.getElementById('imeiSn').value.trim();
 
                 if (customerName && phoneNumber && product && imeiSn) {
                     productList.style.display = 'block';
@@ -562,7 +424,7 @@
                     const gender = document.getElementById('gender').value;
                     const customerName = document.getElementById('customerName').value.trim();
                     const product = document.getElementById('product').value.trim();
-                    const imeiSn = imeiSnInput.value.trim();
+                    const imeiSn = document.getElementById('imeiSn').value.trim();
 
                     let salutation = gender === 'Nam' ? 'anh' : gender === 'Nữ' ? 'chị' : 'quý khách';
                     const thankYouMessage = `Cảm ơn ${salutation} ${customerName} đã mua ${product} có Imei/Sn ${imeiSn} ở Thế Giới Di Động 221 Đặng Thúc Vịnh ạ.`;
